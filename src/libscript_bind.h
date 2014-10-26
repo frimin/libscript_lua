@@ -45,12 +45,25 @@
 
 _NAME_BEGIN
 
+template <typename _Func>
+Value getFunction(Stack& stack, _Func func)
+{
+    CD::Function::push<_Func>(stack, func);
+    return stack;
+}
+
+template <typename _Func>
+Value getForwardFunction(Stack& stack, CD::Function::Forward func)
+{
+    return getFunction(stack, func);
+}
+
 template<typename _Class>
 class BindClass final
 {
 public:
-    typedef typename CD::Constructor<_Class>::Function Creator;
-    typedef typename CD::Method<_Class>::Function Method;
+    typedef typename CD::Constructor<_Class>::Forward Creator;
+    typedef typename CD::Method<_Class>::Forward Method;
     typedef void (*Destroy)(_Class*);
 
     BindClass(Script& script) 

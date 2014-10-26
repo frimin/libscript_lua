@@ -348,7 +348,7 @@ void Stack::pushunsigned(unsigned int n)
     lua_pushunsigned(LUASTATE(_c_state), n);
 }
 
-void Stack::pushValue(int index)
+void Stack::pushvalue(int index)
 {
     lua_pushvalue(LUASTATE(_c_state), index);
 }

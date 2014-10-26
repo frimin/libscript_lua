@@ -140,7 +140,7 @@ Value::Value(const Stack& stack) : Stack(stack)
 Value::Value(const Arg& arg) : Stack(arg)
 {
     /// copy arg and push onto the stack
-    this->pushValue(arg.getIndex());
+    this->pushvalue(arg.getIndex());
 
     _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 }

@@ -182,7 +182,7 @@ public:
     const char* pushstring(const char* s);
     int pushthread();
     void pushunsigned(unsigned int n);
-    void pushValue(int index);
+    void pushvalue(int index);
     const char* pushvfstring(const char* fmt, va_list argp);
     int rawequal(int index1, int index2);
     void rawget(int index);

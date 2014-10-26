@@ -49,14 +49,15 @@ public:
     Arg(const Arg& arg);
 
     const char* typeName()  { return typename_L(_index); }
-    TYPE type()        { return Stack::type(_index); }
+    TYPE type()             { return Stack::type(_index); }
 
     /// Try to conversion to base types
     bool toBoolean()        { return toboolean(_index); }
     long long toInteger()   { return tointeger(_index); }
     double toNumber()       { return tonumber(_index); }
-    void* toLightUserdata()      { return touserdata(_index); }
+    void* toLightUserdata() { return touserdata(_index); }
     const char* toString()  { const char* str = tostring(_index); return str ? str : ""; }
+    Value toValue()         { pushvalue(_index); return *this; }
 
     template<typename _Class> _Class* toClass()
     { 

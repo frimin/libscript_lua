@@ -72,28 +72,52 @@ private:
     Args _args;
 };
 
-template <typename _Func>
 class Function
 {
 public:
+    typedef int(*Forward)(Args& args, Pusher& pusher);
+
+    template <typename _Func>
     static void push(Stack& stack, _Func func)
     {
         Wrapper<_Func> *w = (Wrapper<_Func> *)stack.newuserdata(sizeof(Wrapper<_Func>));
         w->value = func;
-        stack.pushcclosure(Function<_Func>::dispatcher, 1);
+        stack.pushcclosure(Function::dispatcher<_Func>, 1);
+    }
+
+    template <>
+    static void push(Stack& stack, Function::Forward func)
+    {
+        Wrapper<Function::Forward>* w =
+            (Wrapper<Function::Forward>*)stack.newuserdata(sizeof(Wrapper<Function::Forward>));
+        w->value = func;
+        stack.pushcclosure(Function::forwardDispatcher<Forward>, 1);
     }
 
 private:
+    template <typename _Func>
     static int dispatcher(RawInterface raw)
     {
         Stack stack(raw);
 
         Wrapper<_Func>* w = (Wrapper<_Func>*)stack.touserdata(Stack::upvalueindex(1));
 
-        return Function<_Func>::caller(stack, w->value);;
+        return Function::caller<_Func>(stack, w->value);;
     }
 
-    template <typename ... _Args>
+    template <typename _Func>
+    static int forwardDispatcher(RawInterface raw)
+    {
+        Args args(raw);
+
+        auto w = (Wrapper<Function::Forward>*)args.touserdata(Stack::upvalueindex(1));
+
+        Pusher pusher(raw);
+
+        return w->value(args, pusher);
+    }
+
+    template <typename _Func, typename ... _Args>
     static int caller(Stack& stack, void(*func)(_Args ...))
     {
         Args args(stack.getInterface());
@@ -110,7 +134,7 @@ template<typename _Class>
 class Constructor
 {
 public:
-    typedef _Class*(*Function)(Args& args);
+    typedef _Class*(*Forward)(Args& args);
 
     template <typename ... _Args>
     static void push(Stack& stack)
@@ -127,10 +151,10 @@ public:
         stack.pushcclosure(CD::Constructor<_Class>::userDispatcher<_Creator>, 1);
     }
 
-    static void push(Stack& stack, typename Constructor<_Class>::Function method)
+    static void push(Stack& stack, typename Constructor<_Class>::Forward method)
     {
         auto w =
-            (Wrapper<Constructor<_Class>::Function>*)stack.newuserdata(sizeof(Wrapper<Constructor<_Class>::Function>));
+            (Wrapper<Constructor<_Class>::Forward>*)stack.newuserdata(sizeof(Wrapper<Constructor<_Class>::Forward>));
         w->value = method;
         stack.pushcclosure(CD::Constructor<_Class>::forwardDispatcher, 1);
     }
@@ -163,7 +187,7 @@ private:
     {
         Args args(raw);
 
-        auto w = (Wrapper<Constructor<_Class>::Function>*)args.touserdata(Stack::upvalueindex(1));
+        auto w = (Wrapper<Constructor<_Class>::Forward>*)args.touserdata(Stack::upvalueindex(1));
 
         return setupMetaTable(args, w->value(args));
     }
@@ -199,7 +223,7 @@ template<typename _Class>
 class Method
 {
 public:
-    typedef int (*Function)(_Class* _this, Args& args, Pusher& pusher);
+    typedef int(*Forward)(_Class* _this, Args& args, Pusher& pusher);
 
     template<typename _Method>
     static void push(Stack& stack, _Method method)
@@ -209,10 +233,10 @@ public:
         stack.pushcclosure(CD::Method<_Class>::dispatcher<_Method>, 1);
     }
 
-    static void push(Stack& stack, typename Method<_Class>::Function method)
+    static void push(Stack& stack, typename Method<_Class>::Forward method)
     {
-        Wrapper<Method<_Class>::Function>* w = 
-            (Wrapper<Method<_Class>::Function>*)stack.newuserdata(sizeof(Wrapper<Method<_Class>::Function>));
+        Wrapper<Method<_Class>::Forward>* w =
+            (Wrapper<Method<_Class>::Forward>*)stack.newuserdata(sizeof(Wrapper<Method<_Class>::Forward>));
         w->value = method;
         stack.pushcclosure(CD::Method<_Class>::forwardDispatcher, 1);
     }
@@ -250,7 +274,7 @@ private:
 
         auto info = (UserData<_Class>*)args.touserdata(1);
 
-        auto w  = (Wrapper<Method<_Class>::Function>*)args.touserdata(Stack::upvalueindex(1));
+        auto w = (Wrapper<Method<_Class>::Forward>*)args.touserdata(Stack::upvalueindex(1));
 
         if (info->readonly)
         {
