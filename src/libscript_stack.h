@@ -114,10 +114,10 @@ public:
 
     virtual ~Stack();
 
-    void sameThread(Stack& stack);
-    bool sameThreadSafe(Stack& stack);
+    void sameThread(const Stack& stack) const;
+    bool sameThreadSafe(const Stack& stack) const;
 
-    RawInterface getInterface() { return _c_state; }
+    RawInterface getInterface() const { return _c_state; }
 
     /// @brief clear stack
     void clear() { this->settop(0); }

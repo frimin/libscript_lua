@@ -33,27 +33,28 @@
 // +----------------------------------------------------------------------
 
 #include "libscript_thread.h"
+#include "libscript_args.h"
 
 #include <memory.h>
 
 _NAME_BEGIN
 
-Thread::Thread(const Stack& stack) : Value(stack), _thread(nullptr)
+Thread::Thread(const Stack& stack) : Value(stack), _thread(nullptr), _pusher(nullptr)
 {
     pushRef(T_Thread);
     _thread = Stack(tothread(-1));
     pop(1);
 
-    _pusher = std::make_shared<Pusher>(_thread.getInterface());
+    _pusher.reset(_thread.getInterface());
 }
 
-Thread::Thread(const Value& value) : Value(value), _thread(nullptr)
+Thread::Thread(const Value& value) : Value(value), _thread(nullptr), _pusher(nullptr)
 {
     pushRef(T_Thread);
     _thread = Stack(tothread(-1));
     pop(1);
 
-    _pusher = std::make_shared<Pusher>(_thread.getInterface());
+    _pusher.reset(_thread.getInterface());
 }
 
 void Thread::load(const std::string& fileName)
@@ -140,13 +141,13 @@ Table Thread::getGlobalTable()
 
 void Thread::resultReset()
 { 
-    _pusher->reset();
+    _pusher.reset();
     _beform_stack_size = gettop(); 
 }
 
 Stack::THREADSTATUS Thread::_resume()
 {
-    THREADSTATUS result = (THREADSTATUS)_thread.resume(_c_state, _pusher->count());
+    THREADSTATUS result = (THREADSTATUS)_thread.resume(_c_state, _pusher.count());
 
     return result;
 }

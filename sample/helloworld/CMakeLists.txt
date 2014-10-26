@@ -1,4 +1,4 @@
-PROJECT(src)
+PROJECT(sample)
 
 SET(LIB_NAME helloworld)
 

@@ -558,13 +558,13 @@ const char* Stack::setupvalue(int funcindex, int n)
     return lua_setupvalue(LUASTATE(_c_state), funcindex, n);
 }
 
-void Stack::sameThread(Stack& stack)
+void Stack::sameThread(const Stack& stack) const
 {
     if (_c_state != stack._c_state)
         SCRIPT_EXCEPTION("Different thread");
 }
 
-bool Stack::sameThreadSafe(Stack& stack)
+bool Stack::sameThreadSafe(const Stack& stack)const
 {
     return _c_state == stack._c_state;
 }

@@ -36,6 +36,7 @@
 #define _H_LIBSCRIPT_BIND_H_
 
 #include "libscript_sys.h"
+#include "libscript_cd.h"
 
 /// @addtogroup script
 /// @{
@@ -44,227 +45,14 @@
 
 _NAME_BEGIN
 
-enum class ARGS_EVALUATE
-{
-    NOT_TEST,
-    LEFT_TO_RIGHT,
-    RIGHT_TO_LEFT,
-};
-
-class EXPORT ArgsIterator : public Stack
-{
-public:
-    ArgsIterator(Args args, bool reverse = false, int ignoreBottom = 0);
-    Arg GetAndToNext();
-
-    static ARGS_EVALUATE getStaticSequence();
-    static ARGS_EVALUATE getConstructorSequence();
-    static ARGS_EVALUATE getMethodSequence();
-private:
-    int _begin;
-    int _end;
-    int _step;
-    Args _args;
-};
-
-template<typename _Class, typename ... _Args>
-class BindConstructor
-{
-public:
-    static int Constructor(RawInterface raw)
-    {
-        Args args(raw);
-        ArgsIterator argIter(args,
-            ArgsIterator::getConstructorSequence() != ARGS_EVALUATE::RIGHT_TO_LEFT, 0);
-        return ConstructorCaller(raw, new _Class(static_cast<_Args>(argIter.GetAndToNext())...));
-    }
-
-    typedef _Class* (*Creator)(_Args ...);
-
-    static int ConstructorBridge(RawInterface raw)
-    {
-        Stack stack(raw);
-
-        auto w = (Wrapper<Creator>*)stack.touserdata(Stack::upvalueindex(1));
-
-        Args args(raw);
-        ArgsIterator argIter(args,
-            ArgsIterator::getConstructorSequence() != ARGS_EVALUATE::RIGHT_TO_LEFT, 0);
-
-        return ConstructorCaller(raw, w->value(static_cast<_Args>(argIter.GetAndToNext())...));
-    }
-
-private:
-    static int ConstructorCaller(RawInterface raw, _Class* obj)
-    {
-        std::string metaname(METATABLEPREFIX);
-        metaname += typeid(_Class).name();
-
-        Stack stack(raw);
-
-        auto info = (UserData<_Class>*)stack.newuserdata(sizeof(UserData<_Class>));
-
-        info->obj = obj;
-        info->ref = false;
-        info->readonly = false;
-
-        stack.getfield(Stack::REGISTRYINDEX(), metaname.c_str());
-        stack.setmetatable(-2);
-        
-        return 1;
-    }
-};
-
-template<typename _Class, typename _Method>
-class BindMethod
-{
-public:
-    static int Method(RawInterface raw)
-    {
-        Stack stack(raw);
-
-        auto info = (UserData<_Class>*)stack.touserdata(1);
-        
-        Wrapper<_Method>* w = (Wrapper<_Method>*)stack.touserdata(Stack::upvalueindex(1));
-
-        if (info->readonly)
-        {
-            bool readonlyMethod = stack.tointeger(Stack::upvalueindex(2)) == 1;
-            if (readonlyMethod == false)
-            {
-                stack.error_L("Try to call readonly class's usually method");
-                return 0;
-            }
-        }
-
-        return BindMethod<_Class, _Method>::MethodCaller(stack, info, w->value);
-    }
-
-private:
-    template <typename ... _Args>
-    static int MethodCaller(Stack& stack, UserData<_Class>* info, void (_Class::*method)(_Args ...))
-    {
-        if (info->readonly)
-        {
-            stack.error_L("Try to call readonly class's usually method");
-            return 0;
-        }
-
-        Args args(stack.getInterface());
-        ArgsIterator argIter(args,
-            ArgsIterator::getMethodSequence() == ARGS_EVALUATE::RIGHT_TO_LEFT, 1);
-
-        (info->obj->*method)(static_cast<_Args>(argIter.GetAndToNext())...);
-
-        return 0;
-    }
-
-    template <typename _Rt, typename ... _Args>
-    static int MethodCaller(Stack& stack, UserData<_Class>* info, _Rt(_Class::*method)(_Args ...))
-    {
-        if (info->readonly)
-        {
-            stack.error_L("Try to call readonly class's usually method");
-            return 0;
-        }
-
-        Args args(stack.getInterface());
-        ArgsIterator argIter(args,
-            ArgsIterator::getMethodSequence() == ARGS_EVALUATE::RIGHT_TO_LEFT, 1);
-
-        _Rt rt = (info->obj->*method)(static_cast<_Args>(argIter.GetAndToNext())...);
-
-        Pusher pusher(stack.getInterface());
-
-        pusher.push(rt);
-
-        return 1;
-    }
-
-    template <typename ... _Args>
-    static int MethodCaller(Stack& stack, UserData<_Class>* info, void (_Class::*method)(_Args ...) const)
-    {
-        Args args(stack.getInterface());
-        ArgsIterator argIter(args,
-            ArgsIterator::getMethodSequence() == ARGS_EVALUATE::RIGHT_TO_LEFT, 1);
-
-        (info->obj->*method)(static_cast<_Args>(argIter.GetAndToNext())...);
-
-        return 0;
-    }
-
-    template <typename _Rt, typename ... _Args>
-    static int MethodCaller(Stack& stack, UserData<_Class>* info, _Rt(_Class::*method)(_Args ...) const)
-    {
-        Args args(stack.getInterface());
-        ArgsIterator argIter(args,
-            ArgsIterator::getMethodSequence() == ARGS_EVALUATE::RIGHT_TO_LEFT, 1);
-
-        _Rt rt = (info->obj->*method)(static_cast<_Args>(argIter.GetAndToNext())...);
-
-        Pusher pusher(stack.getInterface());
-
-        pusher.push(rt);
-
-        return 1;
-    }
-};
-
-template<typename _Class>
-class BindDestructor
-{
-public:
-    static int Destructor(RawInterface raw)
-    {
-        Args args(raw);
-        ArgsIterator argIter(args,
-            ArgsIterator::getConstructorSequence() != ARGS_EVALUATE::RIGHT_TO_LEFT, 0);
-
-        Stack stack(raw);
-
-        UserData<_Class>* info = (UserData<_Class>*)stack.touserdata(1);
-
-        if (info->ref)
-            return 0;
-
-        if (info->obj)
-        {
-            delete info->obj;
-            info->obj = nullptr;
-        }
-
-        return 0;
-    }
-
-    typedef void (*Destroyer)(_Class*);
-
-    static int DestructorBridge(RawInterface raw)
-    {
-        Stack stack(raw);
-
-        assert(stack.gettop() == 1);
-
-        auto w = (Wrapper<Destroyer>*)stack.touserdata(Stack::upvalueindex(1));
-
-        UserData<_Class>* info = (UserData<_Class>*)stack.touserdata(1);
-
-        if (info->ref)
-            return 0;
-
-        if (info->obj)
-        {
-            w->value(info->obj);
-            info->obj = nullptr;
-        }
-
-        return 0;
-    }
-};
-
 template<typename _Class>
 class BindClass final
 {
 public:
+    typedef typename CD::Constructor<_Class>::Function Creator;
+    typedef typename CD::Method<_Class>::Function Method;
+    typedef void (*Destroy)(_Class*);
+
     BindClass(Script& script) 
         :   _script(script),
             _metaTable(script.newTable()),
@@ -281,20 +69,29 @@ public:
     template <typename ... _Args>
     BindClass& create(const char* name)
     {
-        _script.pushcfunction(BindConstructor<_Class, _Args ...>::Constructor);
+        CD::Constructor<_Class>::push<_Args ...>(_script);
         _script.setglobal(name);
         return *this;
     }
-    
-    template <typename ... _Args>
-    BindClass& create(const char* name, _Class* (creator)(_Args ...))
+
+    template <typename _Creator>
+    BindClass& create(const char* name, _Creator creator)
     {
-        auto w =
-            (Wrapper<_Class* (*)(_Args ...)>*)_script.newuserdata(sizeof(Wrapper<_Class* (*)(_Args ...)>));
-        w->value = creator;
-        _script.pushcclosure(BindConstructor<_Class, _Args ...>::ConstructorBridge, 1);
+        CD::Constructor<_Class>::push(_script, creator);
         _script.setglobal(name);
         return *this;
+    }
+
+    BindClass& create(const char* name, Creator creator)
+    {
+        CD::Constructor<_Class>::push(_script, creator);
+        _script.setglobal(name);
+        return *this;
+    }
+
+    BindClass& create_forward(const char* name, Creator creator)
+    {
+        return create(name, creator);
     }
 
     template<typename _Method>
@@ -302,15 +99,15 @@ public:
     {
         _metaTable.pushRef(Stack::T_Table);
         _script.pushstring(name);
-        Wrapper<_Method>* w = (Wrapper<_Method>*)_script.newuserdata(sizeof(Wrapper<_Method>));
-        w->value = method;
-        _script.pushcclosure(BindMethod<_Class, _Method>::Method, 1);
+        CD::Method<_Class>::push<_Method>(_script, method);
         _script.rawset(-3);
         _script.pop(1);
         return *this;
     }
 
-    BindClass& methodRaw(const char* name, int (method)(RawInterface))
+    /// raw function
+    template<>
+    BindClass& method(const char* name, CFunction method)
     {
         _metaTable.pushRef(Stack::T_Table);
         _script.pushstring(name);
@@ -320,11 +117,28 @@ public:
         return *this;
     }
 
+    /// raw function
+    template<>
+    BindClass& method(const char* name, Method method)
+    {
+        _metaTable.pushRef(Stack::T_Table);
+        _script.pushstring(name);
+        CD::Method<_Class>::push(_script, method);
+        _script.rawset(-3);
+        _script.pop(1);
+        return *this;
+    }
+
+    BindClass& method_forward(const char* name, Method _method)
+    {
+        return method(name, _method);
+    }
+
     BindClass& destroy(const char* name)
     {
         _metaTable.pushRef(Stack::T_Table);
         _script.pushstring(name);
-        _script.pushcfunction(BindDestructor<_Class>::Destructor);
+        CD::Destructor<_Class>::push(_script);
         _script.rawset(-3);
         _script.pop(1);
         return *this;
@@ -334,10 +148,7 @@ public:
     {
         _metaTable.pushRef(Stack::T_Table);
         _script.pushstring(name);
-        auto w =
-            (Wrapper<void(*)(_Class*)>*)_script.newuserdata(sizeof(Wrapper<void(*)(_Class*)>));
-        w->value = destroyer;
-        _script.pushcclosure(BindDestructor<_Class>::DestructorBridge, 1);
+        CD::Destructor<_Class>::push(_script, destroyer);
         _script.rawset(-3);
         _script.pop(1);
         return *this;
@@ -371,7 +182,7 @@ public:
     /// @brief Definition to given table
     Module(Table table);
     /// @brief Definition to create new table
-    Module(Script& script, const std::string& name);
+    Module(Script& script, const char* name);
     ~Module();
 
     template<typename _Key, typename _Value> 
@@ -385,6 +196,7 @@ public:
         }
         return *this;
     }
+
 private:
     Module(const Module& copy) = delete;
     Module& operator=(const Module& copy) = delete;

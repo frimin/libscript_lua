@@ -37,7 +37,7 @@
 
 #include <vector>
 #include "libscript_table.h"
-#include "libscript_helper.h"
+#include "libscript_pusher.h"
 
 /// @addtogroup script
 /// @{

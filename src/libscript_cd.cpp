@@ -32,35 +32,98 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 
-#include "libscript_bind.h"
+#include "libscript_cd.h"
 
 _NAME_BEGIN
 
-Arg::Arg(Stack stack, int index) : Stack(stack), _index(index) { }
-Arg::Arg(const Arg& arg) : Stack(arg) { _index = arg._index; }
-Args::Args(RawInterface raw) : Stack(raw) { _top = gettop(); }
-Args::Args(const Args& args) : Stack(args) { _top = args._top; }
-
-Pusher& Pusher::push(Class c)
+namespace CD
 {
-    auto info = (UserData<VOID_T>*)newuserdata(sizeof(UserData<VOID_T>));
 
-    info->obj = (VOID_T*)c.c;
-    info->ref = c.ref;
-    info->readonly = c.readonly;
+static ARGS_EVALUATE _s_static_call_sequence = ARGS_EVALUATE::NOT_TEST;
+static ARGS_EVALUATE _s_constructor_call_sequence = ARGS_EVALUATE::NOT_TEST;
+static ARGS_EVALUATE _s_method_call_sequence = ARGS_EVALUATE::NOT_TEST;
 
-    getfield(Stack::REGISTRYINDEX(), c.metaname.c_str());
+class _testClass
+{
+public:
+    _testClass(int a, int b) {  }
+    void foo(int a, int b) {  }
+};
 
-    if (!istable(-1))
+void _testStaticCall(int a, int b) { }
+
+
+int _test(bool isLeft, ARGS_EVALUATE& v)
+{
+    if (v != ARGS_EVALUATE::NOT_TEST)
+        return 0;
+    if (isLeft)
+        v = ARGS_EVALUATE::LEFT_TO_RIGHT;
+    else
+        v = ARGS_EVALUATE::RIGHT_TO_LEFT;
+    return 0;
+}
+
+int _doTest()
+{
+    _testStaticCall(
+        _test(true, _s_static_call_sequence),
+        _test(false, _s_static_call_sequence)
+        );
+    _testClass t(
+        _test(true, _s_constructor_call_sequence),
+        _test(false, _s_constructor_call_sequence));
+    t.foo(
+        _test(true, _s_method_call_sequence),
+        _test(false, _s_method_call_sequence));
+    return 0;
+}
+
+const int i = _doTest();
+
+ArgsIterator::ArgsIterator(Args args, bool reverse, int ignoreBottom) : Stack(args), _args(args)
+{
+    if (!reverse)
     {
-        SCRIPT_EXCEPTION("Not found metatable : " + c.metaname);
+        _begin = 1 + ignoreBottom;
+        _end = _args.count() + 1;
+        _step = 1;
     }
+    else
+    {
+        _begin = _args.count();
+        _end = 0 + ignoreBottom;
+        _step = -1;
+    }
+}
 
-    setmetatable(-2);
+Arg ArgsIterator::GetAndToNext()
+{
+    if (_begin == _end)
+        SCRIPT_EXCEPTION("Bad iterator");
 
-    ++_push_count;
+    Arg result(*this, _begin);
 
-    return *this;
+    _begin += _step;
+
+    return result;
+}
+
+ARGS_EVALUATE ArgsIterator::getStaticSequence()
+{
+    return _s_static_call_sequence;
+}
+
+ARGS_EVALUATE ArgsIterator::getConstructorSequence()
+{
+    return _s_constructor_call_sequence;
+}
+
+ARGS_EVALUATE ArgsIterator::getMethodSequence()
+{
+    return _s_method_call_sequence;
+}
+
 }
 
 _NAME_END

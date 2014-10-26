@@ -38,7 +38,8 @@
 #include "libscript_value.h"
 
 #include <vector>
-#include "libscript_helper.h"
+#include "libscript_args.h"
+#include "libscript_pusher.h"
 
 _NAME_BEGIN
 

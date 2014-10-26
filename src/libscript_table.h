@@ -36,7 +36,7 @@
 #define _H_LIBSCRIPT_TABLE_H_
 
 #include "libscript_value.h"
-#include "libscript_helper.h"
+#include "libscript_pusher.h"
 
 /// @addtogroup script
 /// @{

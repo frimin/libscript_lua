@@ -32,65 +32,13 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 
-#ifndef _H_LIBSCRIPT_SYS_H_
-#define _H_LIBSCRIPT_SYS_H_
-
-#include <string>
-#include <vector>
-
-#include "libscript_stack.h"
-#include "libscript_table.h"
-#include "libscript_function.h"
-#include "libscript_thread.h"
-
-/// @addtogroup script
-/// @{
+#include "libscript_args.h"
 
 _NAME_BEGIN
 
-class EXPORT Script final : public Stack
-{
-public:
-    Script(MemAllocFunc alloc = nullptr, void* ud = nullptr);
-    Script(MemAllocation* alloc);
-    ~Script();
-
-    void exec(const std::string& fileName);
-    void execString(const std::string& str);
-    
-    bool execSafe(const std::string& fileName, std::string* errorOut = nullptr);
-    bool execStringSafe(const std::string& str, std::string* errorOut = nullptr);
-
-    Value newFunction(const std::string& script);
-    Value newFunction(CFunction function);
-    Value newTable();
-    Value newThread();
-    Value newThread(Function function);
-    Value getGlobal(const std::string& name);
-    Table getGlobalTable();
-    Value getNil();
-    
-    template <typename _Value>
-    void setGlobal(const std::string& name, _Value value)
-    {
-        Pusher puhser(this->getInterface());
-        puhser.push(value);
-        setglobal(name.c_str());
-    }
-    
-    /// @brief index value with given the key
-    /// @note When to index a nonexistent key, will be return a nil
-    Table operator[](long long key);
-    Table operator[](Value& value);
-    Table operator[](const char *key);
-
-private:
-    Script(const Script& copy) = delete;
-    Script& operator=(const Script& copy) = delete;
-};
-
-/// @}
+Arg::Arg(Stack stack, int index) : Stack(stack), _index(index) { }
+Arg::Arg(const Arg& arg) : Stack(arg) { _index = arg._index; }
+Args::Args(RawInterface raw) : Stack(raw) { _top = gettop(); }
+Args::Args(const Args& args) : Stack(args) { _top = args._top; }
 
 _NAME_END
-
-#endif

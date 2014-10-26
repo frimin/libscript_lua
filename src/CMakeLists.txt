@@ -12,7 +12,7 @@ SET(HEADER_LIST
     libscript_bind.h
     libscript_function.h
     libscript_fwd.h
-    libscript_helper.h
+    libscript_args.h
     libscript_luaapi.h
     libscript_stack.h
     libscript_stack.h
@@ -20,18 +20,21 @@ SET(HEADER_LIST
     libscript_table_dump.h
     libscript_thread.h
     libscript_value.h
+    libscript_pusher.h
+    libscript_cd.h
 )
 
 SET(SOURCE_LIST
     libscript_sys.cpp
     libscript_bind.cpp
     libscript_function.cpp
-    libscript_helper.cpp
+    libscript_args.cpp
     libscript_stack.cpp
     libscript_table.cpp
     libscript_table_dump.cpp
     libscript_thread.cpp
     libscript_value.cpp
+    libscript_cd.cpp
 )
 
 SOURCE_GROUP(${LIB_NAME} FILES ${HEADER_LIST})
@@ -47,3 +50,27 @@ TARGET_LINK_LIBRARIES(${LIB_NAME}
     lua
 )
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/lua)
+
+#########################################################################################
+## Others
+#########################################################################################
+
+SET_TARGET_PROPERTIES(${LIB_NAME} PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_PATH}
+    ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${LIBRARY_OUTPUT_PATH}
+    ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${LIBRARY_OUTPUT_PATH}
+    ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO ${LIBRARY_OUTPUT_PATH}
+    ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL ${LIBRARY_OUTPUT_PATH}
+    LIBRARY_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_PATH}
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG ${LIBRARY_OUTPUT_PATH}
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE ${LIBRARY_OUTPUT_PATH}
+    LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${LIBRARY_OUTPUT_PATH}
+    LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${LIBRARY_OUTPUT_PATH}
+    RUNTIME_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_PATH}
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${LIBRARY_OUTPUT_PATH}
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${LIBRARY_OUTPUT_PATH}
+    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${LIBRARY_OUTPUT_PATH}
+    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${LIBRARY_OUTPUT_PATH}
+    PROJECT_LABEL ${LIB_NAME}
+    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
+)

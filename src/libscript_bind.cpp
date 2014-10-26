@@ -33,93 +33,9 @@
 // +----------------------------------------------------------------------
 
 #include "libscript_bind.h"
+#include "libscript_sys.h"
 
 _NAME_BEGIN
-
-static ARGS_EVALUATE _s_static_call_sequence = ARGS_EVALUATE::NOT_TEST;
-static ARGS_EVALUATE _s_constructor_call_sequence = ARGS_EVALUATE::NOT_TEST;
-static ARGS_EVALUATE _s_method_call_sequence = ARGS_EVALUATE::NOT_TEST;
-
-class _testClass
-{
-public:
-    _testClass(int a, int b) {  }
-    void foo(int a, int b) {  }
-};
-
-void _testStaticCall(int a, int b) { }
-
-
-int _test(bool isLeft, ARGS_EVALUATE& v)
-{
-    if (v != ARGS_EVALUATE::NOT_TEST)
-        return 0;
-    if (isLeft)
-        v = ARGS_EVALUATE::LEFT_TO_RIGHT;
-    else
-        v = ARGS_EVALUATE::RIGHT_TO_LEFT;
-    return 0;
-}
-
-int _doTest()
-{
-    _testStaticCall(
-        _test(true, _s_static_call_sequence),
-        _test(false, _s_static_call_sequence)
-        );
-    _testClass t(
-        _test(true, _s_constructor_call_sequence),
-        _test(false, _s_constructor_call_sequence));
-    t.foo(
-        _test(true, _s_method_call_sequence),
-        _test(false, _s_method_call_sequence));
-    return 0;
-}
-
-const int i = _doTest();
-
-ArgsIterator::ArgsIterator(Args args, bool reverse, int ignoreBottom) : Stack(args), _args(args)
-{
-    if (!reverse)
-    {
-        _begin = 1 + ignoreBottom;
-        _end = _args.count() + 1;
-        _step = 1;
-    }
-    else
-    {
-        _begin = _args.count();
-        _end = 0 + ignoreBottom;
-        _step = -1;
-    }
-}
-
-Arg ArgsIterator::GetAndToNext()
-{
-    if (_begin == _end)
-        SCRIPT_EXCEPTION("Bad iterator");
-
-    Arg result(*this, _begin);
-
-    _begin += _step;
-    
-    return result;
-}
-
-ARGS_EVALUATE ArgsIterator::getStaticSequence()
-{
-    return _s_static_call_sequence;
-}
-
-ARGS_EVALUATE ArgsIterator::getConstructorSequence()
-{
-    return _s_constructor_call_sequence;
-}
-
-ARGS_EVALUATE ArgsIterator::getMethodSequence()
-{
-    return _s_method_call_sequence;
-}
 
 // +----------------------------------------------------------------------
 // class Module
@@ -137,7 +53,7 @@ Module::Module(Table table)
     _badFlag = !_module.pushRefSafe(Stack::T_Table);
 }
 
-Module::Module(Script& script, const std::string& name)
+Module::Module(Script& script, const char* name)
     : _module(script.newTable()), _pusher(script.getInterface())
 {
     script.getGlobalTable().set(name, _module);

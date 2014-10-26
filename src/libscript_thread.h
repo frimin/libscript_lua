@@ -37,7 +37,7 @@
 
 #include "libscript_value.h"
 #include "libscript_table.h"
-#include "libscript_helper.h"
+#include "libscript_pusher.h"
 
 /// @addtogroup script
 /// @{
@@ -71,7 +71,7 @@ public:
     {
         std::tuple<_Args ...> tuple(arg ...);
         resultReset();
-        _ArgPusher<std::tuple<_Args ...>, sizeof...(_Args)>::push(*_pusher.get(), tuple);
+        _ArgPusher<std::tuple<_Args ...>, sizeof...(_Args)>::push(_pusher, tuple);
         return _resume();
     }
 
@@ -111,7 +111,7 @@ private:
     int _beform_stack_size;
     int _resultNum;
     Stack _thread;
-    std::shared_ptr<Pusher> _pusher;
+    Pusher _pusher;
 };
 
 /// @}

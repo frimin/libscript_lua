@@ -1,6 +1,6 @@
 PROJECT(sample)
 
-SET(LIB_NAME dumptable)
+SET(LIB_NAME bindclass)
 
 #########################################################################################
 ## FILES

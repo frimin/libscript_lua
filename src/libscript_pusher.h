@@ -32,61 +32,59 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 
-#ifndef _H_LIBSCRIPT_SYS_H_
-#define _H_LIBSCRIPT_SYS_H_
+#ifndef _H_LIBSCRIPT_PUSHER_H_
+#define _H_LIBSCRIPT_PUSHER_H_
 
-#include <string>
-#include <vector>
-
-#include "libscript_stack.h"
-#include "libscript_table.h"
-#include "libscript_function.h"
-#include "libscript_thread.h"
+#include "libscript_value.h"
 
 /// @addtogroup script
 /// @{
 
 _NAME_BEGIN
 
-class EXPORT Script final : public Stack
+class EXPORT Pusher final : public Stack
 {
 public:
-    Script(MemAllocFunc alloc = nullptr, void* ud = nullptr);
-    Script(MemAllocation* alloc);
-    ~Script();
+    Pusher(RawInterface raw) : Stack(raw), _push_count(0) { }
 
-    void exec(const std::string& fileName);
-    void execString(const std::string& str);
+    Pusher& push(bool b)         { pushboolean(b); ++_push_count; return *this; }
+    Pusher& push(long long n)    { pushinteger(n); ++_push_count; return *this; }
+    Pusher& push(int n)          { pushinteger(n); ++_push_count; return *this; }
+    Pusher& push(unsigned n)     { pushinteger(n); ++_push_count; return *this; }
+    Pusher& push(long n)         { pushinteger(n); ++_push_count; return *this; }
+    Pusher& push(const char* cstr) { pushstring(cstr); ++_push_count; return *this; }
+    Pusher& push(double f)       { pushnumber(f); ++_push_count; return *this; }
+    Pusher& push(CFunction func) { pushcfunction(func); ++_push_count; return *this; }
+    Pusher& push(Value::P_Nil)   { pushnil(); ++_push_count; return *this; }
+    Pusher& push(Value value)    { sameThread(value); value.pushRefSafe(NoneMask); ++_push_count; return *this; }
     
-    bool execSafe(const std::string& fileName, std::string* errorOut = nullptr);
-    bool execStringSafe(const std::string& str, std::string* errorOut = nullptr);
+    Pusher& push(Class c)        {
+        auto info = (UserData<VOID_T>*)newuserdata(sizeof(UserData<VOID_T>));
 
-    Value newFunction(const std::string& script);
-    Value newFunction(CFunction function);
-    Value newTable();
-    Value newThread();
-    Value newThread(Function function);
-    Value getGlobal(const std::string& name);
-    Table getGlobalTable();
-    Value getNil();
-    
-    template <typename _Value>
-    void setGlobal(const std::string& name, _Value value)
-    {
-        Pusher puhser(this->getInterface());
-        puhser.push(value);
-        setglobal(name.c_str());
+        info->obj = (VOID_T*)c.c;
+        info->ref = c.ref;
+        info->readonly = c.readonly;
+
+        getfield(Stack::REGISTRYINDEX(), c.metaname.c_str());
+
+        if (!istable(-1))
+        {
+            SCRIPT_EXCEPTION("Not found metatable : " + c.metaname);
+        }
+
+        setmetatable(-2);
+
+        ++_push_count;
+
+        return *this;
     }
-    
-    /// @brief index value with given the key
-    /// @note When to index a nonexistent key, will be return a nil
-    Table operator[](long long key);
-    Table operator[](Value& value);
-    Table operator[](const char *key);
+
+    void reset(RawInterface raw){ reset(); _c_state = raw; }
+    void reset()                { _push_count = 0; }
+    int count() const           { return _push_count; }
 
 private:
-    Script(const Script& copy) = delete;
-    Script& operator=(const Script& copy) = delete;
+    int _push_count;
 };
 
 /// @}

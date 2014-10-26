@@ -99,6 +99,48 @@ template<typename _T> struct Wrapper {
     _T value;
 };
 
+template<typename _Class>
+class RefClass : public Class
+{
+public:
+    RefClass(_Class* _c)
+    {
+        c = _c;
+        metaname = std::string(METATABLEPREFIX) + typeid(_Class).name();
+        ref = true;
+        readonly = false;
+    }
+
+    RefClass(_Class& _c)
+    {
+        c = &_c;
+        metaname = std::string(METATABLEPREFIX) + typeid(_Class).name();
+        ref = true;
+        readonly = false;
+    }
+
+    RefClass(const _Class* _c)
+    {
+        c = const_cast<_Class*>(_c);
+        metaname = std::string(METATABLEPREFIX) + typeid(_Class).name();
+        ref = true;
+        readonly = true;
+    }
+};
+
+template<typename _Class>
+class GCClass : public Class
+{
+public:
+    GCClass(_Class* _c)
+    {
+        c = _c;
+        metaname = std::string(METATABLEPREFIX) + typeid(_Class).name();
+        ref = false;
+        readonly = false;
+    }
+};
+
 _NAME_END
 
 #endif
