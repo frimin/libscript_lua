@@ -52,13 +52,7 @@ Value getFunction(Stack& stack, _Func func)
     return stack;
 }
 
-Value getForwardFunction(Stack& stack, CD::Function::Forward func)
-{
-    CD::Function::pushForward(stack, func);
-    return stack;
-}
-
-
+Value getForwardFunction(Stack& stack, CD::Function::Forward func);
 
 template<typename _Class>
 class BindClass final

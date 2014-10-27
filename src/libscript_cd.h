@@ -85,7 +85,7 @@ public:
         stack.pushcclosure(Function::dispatcher<_Func>, 1);
     }
 
-    static void pushForward(Stack& stack, typename Function::Forward func)
+    static void pushForward(Stack& stack, Function::Forward func)
     {
         auto w = (Wrapper<Function::Forward>*)stack.newuserdata(sizeof(Wrapper<Function::Forward>));
         w->value = func;

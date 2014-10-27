@@ -37,6 +37,12 @@
 
 _NAME_BEGIN
 
+Value getForwardFunction(Stack& stack, CD::Function::Forward func)
+{
+    CD::Function::pushForward(stack, func);
+    return stack;
+}
+
 // +----------------------------------------------------------------------
 // class Module
 // +----------------------------------------------------------------------
