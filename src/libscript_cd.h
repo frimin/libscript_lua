@@ -76,22 +76,20 @@ class Function
 {
 public:
     typedef int(*Forward)(Args& args, Pusher& pusher);
-
+    
     template <typename _Func>
     static void push(Stack& stack, _Func func)
     {
-        Wrapper<_Func> *w = (Wrapper<_Func> *)stack.newuserdata(sizeof(Wrapper<_Func>));
+        auto *w = (Wrapper<_Func> *)stack.newuserdata(sizeof(Wrapper<_Func>));
         w->value = func;
         stack.pushcclosure(Function::dispatcher<_Func>, 1);
     }
 
-    template <>
-    static void push(Stack& stack, Function::Forward func)
+    static void pushForward(Stack& stack, typename Function::Forward func)
     {
-        Wrapper<Function::Forward>* w =
-            (Wrapper<Function::Forward>*)stack.newuserdata(sizeof(Wrapper<Function::Forward>));
+        auto w = (Wrapper<Function::Forward>*)stack.newuserdata(sizeof(Wrapper<Function::Forward>));
         w->value = func;
-        stack.pushcclosure(Function::forwardDispatcher<Forward>, 1);
+        stack.pushcclosure(Function::forwardDispatcher, 1);
     }
 
 private:
@@ -100,12 +98,11 @@ private:
     {
         Stack stack(raw);
 
-        Wrapper<_Func>* w = (Wrapper<_Func>*)stack.touserdata(Stack::upvalueindex(1));
+        auto w = (Wrapper<_Func>*)stack.touserdata(Stack::upvalueindex(1));
 
-        return Function::caller<_Func>(stack, w->value);;
+        return Function::caller(stack, w->value);
     }
 
-    template <typename _Func>
     static int forwardDispatcher(RawInterface raw)
     {
         Args args(raw);
@@ -117,17 +114,34 @@ private:
         return w->value(args, pusher);
     }
 
-    template <typename _Func, typename ... _Args>
+    template <typename ... _Args>
     static int caller(Stack& stack, void(*func)(_Args ...))
     {
         Args args(stack.getInterface());
         ArgsIterator argIter(args,
-            ArgsIterator::getStaticSequence() == ARGS_EVALUATE::RIGHT_TO_LEFT, 0);
-
+                             ArgsIterator::getStaticSequence() == ARGS_EVALUATE::RIGHT_TO_LEFT, 0);
+        
         func(static_cast<_Args>(argIter.GetAndToNext())...);
-
+        
         return 0;
     }
+    
+    /*
+    template <typename _Rt, typename ... _Args>
+    static int caller(Stack& stack,  _Rt(*func)(_Args ...))
+    {
+        Args args(stack.getInterface());
+        ArgsIterator argIter(args,
+            ArgsIterator::getStaticSequence() == ARGS_EVALUATE::RIGHT_TO_LEFT, 0);
+        
+        _Rt rt = func(static_cast<_Args>(argIter.GetAndToNext())...);
+        
+        Pusher pusher(stack.getInterface());
+        
+        pusher.push(rt);
+        
+        return pusher.count();
+    }*/
 };
 
 template<typename _Class>
@@ -151,7 +165,7 @@ public:
         stack.pushcclosure(CD::Constructor<_Class>::userDispatcher<_Creator>, 1);
     }
 
-    static void push(Stack& stack, typename Constructor<_Class>::Forward method)
+    static void pushForward(Stack& stack, typename Constructor<_Class>::Forward method)
     {
         auto w =
             (Wrapper<Constructor<_Class>::Forward>*)stack.newuserdata(sizeof(Wrapper<Constructor<_Class>::Forward>));
@@ -233,7 +247,7 @@ public:
         stack.pushcclosure(CD::Method<_Class>::dispatcher<_Method>, 1);
     }
 
-    static void push(Stack& stack, typename Method<_Class>::Forward method)
+    static void pushForward(Stack& stack, typename Method<_Class>::Forward method)
     {
         Wrapper<Method<_Class>::Forward>* w =
             (Wrapper<Method<_Class>::Forward>*)stack.newuserdata(sizeof(Wrapper<Method<_Class>::Forward>));
@@ -327,7 +341,7 @@ private:
 
         pusher.push(rt);
 
-        return 1;
+        return pusher.count();
     }
 
     template <typename ... _Args>
@@ -355,7 +369,7 @@ private:
 
         pusher.push(rt);
 
-        return 1;
+        return pusher.count();
     }
 };
 

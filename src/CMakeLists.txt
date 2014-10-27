@@ -46,10 +46,11 @@ ADD_LIBRARY(${LIB_NAME} ${HEADER_LIST} ${SOURCE_LIST})
 ## INCLUDE & LINK
 #########################################################################################
 
-TARGET_LINK_LIBRARIES(${LIB_NAME}
-    lua
+FOREACH(DEPENDENCIES_LIB
+  lua
 )
-INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/lua)
+    ADD_DEPENDENCIES_LIB(${DEPENDENCIES_LIB})
+ENDFOREACH()
 
 #########################################################################################
 ## Others

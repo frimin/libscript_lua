@@ -36,6 +36,6 @@ int main()
     Function foo = script["foo"];
     foo(256);
 
-    script.getGlobalTable().set("printtable", getFunction(script, printtable));
+    script.getGlobalTable().set("printtable", getForwardFunction(script, printtable));
     script.execString(R"( printtable({123, "hello", "456"}) )");
 }

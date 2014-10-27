@@ -52,11 +52,13 @@ Value getFunction(Stack& stack, _Func func)
     return stack;
 }
 
-template <typename _Func>
 Value getForwardFunction(Stack& stack, CD::Function::Forward func)
 {
-    return getFunction(stack, func);
+    CD::Function::pushForward(stack, func);
+    return stack;
 }
+
+
 
 template<typename _Class>
 class BindClass final
@@ -82,7 +84,7 @@ public:
     template <typename ... _Args>
     BindClass& create(const char* name)
     {
-        CD::Constructor<_Class>::push<_Args ...>(_script);
+        CD::Constructor<_Class>::template push<_Args ...>(_script);
         _script.setglobal(name);
         return *this;
     }
@@ -95,16 +97,11 @@ public:
         return *this;
     }
 
-    BindClass& create(const char* name, Creator creator)
-    {
-        CD::Constructor<_Class>::push(_script, creator);
-        _script.setglobal(name);
-        return *this;
-    }
-
     BindClass& create_forward(const char* name, Creator creator)
     {
-        return create(name, creator);
+        CD::Constructor<_Class>::pushForward(_script, creator);
+        _script.setglobal(name);
+        return *this;
     }
 
     template<typename _Method>
@@ -112,39 +109,20 @@ public:
     {
         _metaTable.pushRef(Stack::T_Table);
         _script.pushstring(name);
-        CD::Method<_Class>::push<_Method>(_script, method);
+        CD::Method<_Class>::template push<_Method>(_script, method);
         _script.rawset(-3);
         _script.pop(1);
         return *this;
     }
 
-    /// raw function
-    template<>
-    BindClass& method(const char* name, CFunction method)
+    BindClass& method_forward(const char* name, Method method)
     {
         _metaTable.pushRef(Stack::T_Table);
         _script.pushstring(name);
-        _script.pushcfunction(method);
+        CD::Method<_Class>::pushForward(_script, method);
         _script.rawset(-3);
         _script.pop(1);
         return *this;
-    }
-
-    /// raw function
-    template<>
-    BindClass& method(const char* name, Method method)
-    {
-        _metaTable.pushRef(Stack::T_Table);
-        _script.pushstring(name);
-        CD::Method<_Class>::push(_script, method);
-        _script.rawset(-3);
-        _script.pop(1);
-        return *this;
-    }
-
-    BindClass& method_forward(const char* name, Method _method)
-    {
-        return method(name, _method);
     }
 
     BindClass& destroy(const char* name)
@@ -177,6 +155,7 @@ public:
         _pusher.pop(1);
         return *this;
     }
+    
 private:
     BindClass(const BindClass& copy) = delete;
     BindClass& operator=(const BindClass& copy) = delete;

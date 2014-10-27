@@ -22,6 +22,11 @@ public:
     {
         std::cout << "foo"<<std::endl;
     }
+    
+    int foo2()
+    {
+        return 0;
+    }
 
     int n;
 };
@@ -45,6 +50,7 @@ int main()
         })
             .destroy("__gc")
             .destroy("free")
+            .method("foo2", &MyClass::foo2)
             .method_forward("foo", [](MyClass* _this, Args& args, Pusher& pusher)->int{
             std::cout << _this->n << std::endl;
             _this->n++;
