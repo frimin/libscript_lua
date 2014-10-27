@@ -52,8 +52,6 @@
 #define EXPORT
 #endif
 
-#define METATABLEPREFIX "_metaclass_"
-
 #ifndef SCRIPT_EXCEPTION
 #include <exception>
 #define SCRIPT_EXCEPTION(s) throw std::logic_error(s)
@@ -106,7 +104,7 @@ public:
     RefClass(_Class* _c)
     {
         c = _c;
-        metaname = std::string(METATABLEPREFIX) + typeid(_Class).name();
+        metaname = typeid(_Class).name();
         ref = true;
         readonly = false;
     }
@@ -114,7 +112,7 @@ public:
     RefClass(_Class& _c)
     {
         c = &_c;
-        metaname = std::string(METATABLEPREFIX) + typeid(_Class).name();
+        metaname = typeid(_Class).name();
         ref = true;
         readonly = false;
     }
@@ -122,7 +120,7 @@ public:
     RefClass(const _Class* _c)
     {
         c = const_cast<_Class*>(_c);
-        metaname = std::string(METATABLEPREFIX) + typeid(_Class).name();
+        metaname = typeid(_Class).name();
         ref = true;
         readonly = true;
     }
@@ -135,7 +133,7 @@ public:
     GCClass(_Class* _c)
     {
         c = _c;
-        metaname = std::string(METATABLEPREFIX) + typeid(_Class).name();
+        metaname = typeid(_Class).name();
         ref = false;
         readonly = false;
     }

@@ -34,6 +34,7 @@ SET(SOURCE_LIST
     libscript_table_dump.cpp
     libscript_thread.cpp
     libscript_value.cpp
+    libscript_pusher.cpp
     libscript_cd.cpp
 )
 

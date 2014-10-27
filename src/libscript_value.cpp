@@ -137,7 +137,7 @@ Value::Value(const Stack& stack) : Stack(stack)
     _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 }
 
-Value::Value(const Arg& arg) : Stack(arg)
+Value::Value(const StackValue& arg) : Stack(arg)
 {
     /// copy arg and push onto the stack
     this->pushvalue(arg.getIndex());
@@ -272,6 +272,33 @@ const char* Value::toString()
     return result;
 }
 
+void* Value::_toClass(const char* metaname)
+{
+    pushRef(T_Userdata);
+    checkudata_L(-1, metaname);
+    auto info = (UserData<VOID_T>*)touserdata(-1);
+    pop(1);
+    return info->readonly ? nullptr : info->obj;
+}
+
+void* Value::_toConstClass(const char* metaname)
+{
+    pushRef(T_Userdata);
+    checkudata_L(-1, metaname);
+    auto info = (UserData<VOID_T>*)touserdata(-1);
+    pop(1);
+    return info->obj;
+}
+
+const void* Value::_toClassInfo(const char* metaname)
+{
+    pushRef(T_Userdata);
+    checkudata_L(-1, metaname);
+    auto block = (UserData<VOID_T>*)touserdata(-1);
+    pop(1);
+    return block;
+}
+
 bool Value::isBoolean()
 {
     pushRefSafe(NoneMask);
@@ -392,6 +419,7 @@ Value::operator const char*()
     return toString();
 }
 
+
 bool Value::operator ==(Value& value)
 {
     if (!sameThreadSafe(value))
@@ -444,6 +472,39 @@ void Value::endOfHandlerRefBuffer()
         SCRIPT_EXCEPTION("Some handler is not release");
 
     ValueHandler::clearFree();
+}
+
+StackValue::StackValue(Stack stack, int index) : Stack(stack), _index(index) {
+
+}
+
+StackValue::StackValue(const StackValue& arg) : Stack(arg) { 
+    _index = arg._index; 
+}
+
+void* StackValue::_toClass(const char* metaname)
+{
+    checkudata_L(_index, metaname);
+
+    auto info = (UserData<VOID_T>*)touserdata(_index);
+
+    return info->readonly ? nullptr : info->obj;
+}
+
+void* StackValue::_toConstClass(const char* metaname)
+{
+    checkudata_L(_index, metaname);
+
+    auto info = (UserData<VOID_T>*)touserdata(_index);
+
+    return info->obj;
+}
+
+const void* StackValue::_toClassInfo(const char* metaname)
+{
+    checkudata_L(_index, metaname);
+
+    return (UserData<VOID_T>*)touserdata(_index);
 }
 
 _NAME_END

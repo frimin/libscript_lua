@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-class Arg;
+class StackValue;
 
 class EXPORT Value : public Stack
 {
@@ -52,7 +52,7 @@ public:
 
     Value(RawInterface raw);
     Value(const Stack& stack);
-    Value(const Arg& arg);
+    Value(const StackValue& arg);
     Value(const Value& copy);
     virtual ~Value();
 
@@ -81,34 +81,17 @@ public:
 
     template<typename _Class> _Class* toClass()
     {
-        pushRef(T_Userdata);
-        std::string metaname =
-            std::string(METATABLEPREFIX) + typeid(_Class).name();
-        checkudata_L(-1, metaname.c_str());
-        auto info = (UserData<_Class>*)touserdata(-1);
-        pop(1);
-        return info->readonly ? nullptr : info->obj;
+        return (_Class*)_toClass(typeid(_Class).name());
     }
 
-    template<typename _Class> const _Class* toReadOnlyClass()
+    template<typename _Class> const _Class* toConstClass()
     {
-        std::string metaname =
-            std::string(METATABLEPREFIX) + typeid(_Class).name();
-        checkudata_L(-1, metaname.c_str());
-        auto info = (UserData<_Class>*)touserdata(-1);
-        pop(1);
-        return info->obj;
+        return (_Class*)_toConstClass(typeid(_Class).name());
     }
 
     template<typename _Class> const UserData<_Class>* toClassInfo()
     {
-        pushRef(T_Userdata);
-        std::string metaname =
-            std::string(METATABLEPREFIX) + typeid(_Class).name();
-        checkudata_L(-1, metaname.c_str());
-        auto block = (UserData<_Class>*)touserdata(-1);
-        pop(1);
-        return block;
+        return (UserData<_Class>*)_toClassInfo(typeid(_Class).name());
     }
 
     bool isBoolean();
@@ -139,9 +122,77 @@ protected:
     ValueHandler* _handler;
 
 private:
+    void* _toClass(const char* metaname);
+    void* _toConstClass(const char* metaname);
+    const void* _toClassInfo(const char* metaname);
+
+private:
     static void endOfHandlerRefBuffer();
 
     void releaseHandler();
+};
+
+class EXPORT StackValue final : public Stack
+{
+public:
+    StackValue(Stack stack, int index);
+    StackValue(const StackValue& arg);
+
+    const char* typeName()  { return typename_L(_index); }
+    TYPE type()             { return Stack::type(_index); }
+
+    /// Try to conversion to base types
+    bool toBoolean()        { return toboolean(_index); }
+    long long toInteger()   { return tointeger(_index); }
+    double toNumber()       { return tonumber(_index); }
+    void* toUserdata() { return touserdata(_index); }
+    const char* toString()  { const char* str = tostring(_index); return str ? str : ""; }
+    Value toValue()         { pushvalue(_index); return *this; }
+
+    template<typename _Class> _Class* toClass()
+    {
+        return (_Class*)_toClass(typeid(_Class).name());
+    }
+
+    template<typename _Class> const _Class* toConstClass()
+    {
+        return (_Class*)_toConstClass(typeid(_Class).name());
+    }
+
+    template<typename _Class> const UserData<_Class>* toClassInfo()
+    {
+        return (UserData<_Class>*)_toClassInfo(typeid(_Class).name());
+    }
+
+    bool isBoolean()        { return isboolean(_index); }
+    bool isCFunction()      { return iscfunction(_index); }
+    bool isFunction()       { return isfunction(_index); }
+    bool isNil()            { return isnil(_index); }
+    bool isNoneOrNil()      { return isnoneornil(_index); }
+    bool isNumber()         { return isnumber(_index); }
+    bool isString()         { return isstring(_index); }
+    bool isTable()          { return istable(_index); }
+    bool isThread()         { return isthread(_index); }
+    bool isUserdata()       { return isuserdata(_index); }
+
+    operator bool()         { return toBoolean(); }
+    operator int()          { return toInteger(); }
+    operator long()         { return toInteger(); }
+    operator long long()    { return toInteger(); }
+    operator float()        { return toNumber(); }
+    operator double()       { return toNumber(); }
+    operator void*()        { return toUserdata(); }
+    operator const char*()  { return toString(); }
+
+    int getIndex() const    { return _index; }
+
+private:
+    void* _toClass(const char* metaname);
+    void* _toConstClass(const char* metaname);
+    const void* _toClassInfo(const char* metaname);
+
+private:
+    int _index;
 };
 
 /// @}

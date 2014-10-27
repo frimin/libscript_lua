@@ -67,8 +67,7 @@ public:
             _metaTable(script.newTable()),
             _pusher(script.getInterface())
     {
-        std::string metaname(METATABLEPREFIX);
-        metaname += typeid(_Class).name();
+        std::string metaname(typeid(_Class).name());
 
         _metaTable.set("__index", _metaTable);
         _metaTable.pushRefSafe(Stack::NoneMask);

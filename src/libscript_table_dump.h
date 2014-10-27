@@ -42,7 +42,7 @@
 /// @{
 
 _NAME_BEGIN
-class ostream;
+
 class EXPORT TableStringDumper final : public Value
 {
 public:
@@ -55,11 +55,6 @@ public:
     bool dump(const std::string& tableName, 
         const std::string& fileName);
 };
-
-Table EXPORT LoadTableString(Stack& stack,
-    const std::string& tableName, 
-    const std::string& fileName,
-    bool setCacheNil = true);
 
 /// @}
 

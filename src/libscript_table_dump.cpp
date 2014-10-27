@@ -158,9 +158,9 @@ bool legalStringKey(const char* str, std::size_t n)
     return result;
 }
 
-void tabs(std::ostream& o, int n)
+void tabs(std::ostream& o, std::size_t n)
 {
-    for (int i = 0; i != n; ++i)
+    for (std::size_t i = 0; i != n; ++i)
         o << "    ";
 }
 
@@ -260,28 +260,6 @@ bool TableStringDumper::dump(const std::string& tableName, const std::string& fi
         return false;
 
     bool result = this->dump(tableName, file);
-
-    return result;
-}
-
-Table LoadTableString(Stack& stack, const std::string& tableName, const std::string& fileName, bool setCacheNil)
-{
-    if (stack.dofile_L(fileName.c_str()))
-    {
-        std::string errorInfo = stack.tostring(-1);
-        stack.pop(1);
-        SCRIPT_EXCEPTION(errorInfo);
-    }
-
-    stack.getglobal(tableName.c_str());
-
-    Value result(stack);
-
-    if (setCacheNil)
-    {
-        stack.pushnil();
-        stack.setglobal(tableName.c_str());
-    }
 
     return result;
 }

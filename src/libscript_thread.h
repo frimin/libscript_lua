@@ -48,7 +48,7 @@ class EXPORT Thread final : public Value
 {
     friend class Script;
 public:
-    typedef Arg Result;
+    typedef StackValue Result;
 
     Thread(const Stack& stack);
     Thread(const Value& value);

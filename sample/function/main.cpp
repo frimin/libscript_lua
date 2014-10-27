@@ -1,7 +1,7 @@
 #include <iostream>
 #include "libscript.h"
 
-int printtable(Args& args, Pusher& pusher)
+int foo2(Args& args, Pusher& pusher)
 {
     if (args[1].isTable())
     {
@@ -9,7 +9,7 @@ int printtable(Args& args, Pusher& pusher)
 
         for (Table::Accessor acc(t); !acc.end(); acc.next())
         {
-            auto type = acc.key().type();
+            auto type = acc.value().type();
 
             switch (type)
             {
@@ -28,14 +28,34 @@ int printtable(Args& args, Pusher& pusher)
     return pusher.count();
 }
 
+int foo3(int n)
+{
+    return n + 1;
+}
+
+void foo4(const char* s)
+{
+    std::cout << s << std::endl;
+}
+
 int main()
 {
+    CFunction f = [](RawInterface raw)->int { return 0; };
+
     Script script;
-    script.execString("function foo(n) print(n) end");
 
-    Function foo = script["foo"];
-    foo(256);
+    script.execString("function foo1(s) print(s) end");
+    script.getGlobalTable().set("foo2", getForwardFunction(script, foo2));
+    script.getGlobalTable().set("foo3", getFunction(script, foo3));
+    script.getGlobalTable().set("foo4", getFunction(script, foo4));
 
-    script.getGlobalTable().set("printtable", getForwardFunction(script, printtable));
-    script.execString(R"( printtable({123, "hello", "456"}) )");
+    // Call foo1
+    Function foo1 = script.getGlobal("foo1");
+    foo1("call foo1");
+    // Call foo2
+    script.execString(R"( foo2({"\tprint", "\ta", "\ttable"}) )");
+    // Call foo3
+    script.execString(R"( print(foo3(2)) )");
+    // Call foo4
+    script.execString(R"( foo4("call foo4") )");
 }

@@ -51,8 +51,8 @@ _NAME_BEGIN
 class EXPORT Script final : public Stack
 {
 public:
-    Script(MemAllocFunc alloc = nullptr, void* ud = nullptr);
-    Script(MemAllocation* alloc);
+    Script(bool openlibs = true, MemAllocFunc alloc = nullptr, void* ud = nullptr);
+    Script(bool openlibs, MemAllocation* alloc);
     ~Script();
 
     void exec(const std::string& fileName);

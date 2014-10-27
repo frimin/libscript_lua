@@ -32,8 +32,8 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 
-#ifndef _H_LIBSCRIPT_CALLER_H_
-#define _H_LIBSCRIPT_CALLER_H_
+#ifndef _H_LIBSCRIPT_CALL_DISPATCHER_H_
+#define _H_LIBSCRIPT_CALL_DISPATCHER_H_
 
 #include "libscript_value.h"
 #include "libscript_pusher.h"
@@ -60,7 +60,7 @@ class EXPORT ArgsIterator : public Stack
 {
 public:
     ArgsIterator(Args args, bool reverse = false, int ignoreBottom = 0);
-    Arg GetAndToNext();
+    StackValue GetAndToNext();
 
     static ARGS_EVALUATE getStaticSequence();
     static ARGS_EVALUATE getConstructorSequence();
@@ -113,7 +113,7 @@ private:
 
         return w->value(args, pusher);
     }
-
+    
     template <typename ... _Args>
     static int caller(Stack& stack, void(*func)(_Args ...))
     {
@@ -126,7 +126,6 @@ private:
         return 0;
     }
     
-    /*
     template <typename _Rt, typename ... _Args>
     static int caller(Stack& stack,  _Rt(*func)(_Args ...))
     {
@@ -141,7 +140,7 @@ private:
         pusher.push(rt);
         
         return pusher.count();
-    }*/
+    }
 };
 
 template<typename _Class>
@@ -217,8 +216,7 @@ private:
         if (obj == nullptr)
            return stack.error_L("Bad initialization");;
 
-        std::string metaname(METATABLEPREFIX);
-        metaname += typeid(_Class).name();
+        std::string metaname(typeid(_Class).name());
 
         auto info = (UserData<_Class>*)stack.newuserdata(sizeof(UserData<_Class>));
 
@@ -244,7 +242,7 @@ public:
     {
         Wrapper<_Method>* w = (Wrapper<_Method>*)stack.newuserdata(sizeof(Wrapper<_Method>));
         w->value = method;
-        stack.pushcclosure(CD::Method<_Class>::dispatcher<_Method>, 1);
+        stack.pushcclosure(Method<_Class>::dispatcher<_Method>, 1);
     }
 
     static void pushForward(Stack& stack, typename Method<_Class>::Forward method)
@@ -252,7 +250,7 @@ public:
         Wrapper<Method<_Class>::Forward>* w =
             (Wrapper<Method<_Class>::Forward>*)stack.newuserdata(sizeof(Wrapper<Method<_Class>::Forward>));
         w->value = method;
-        stack.pushcclosure(CD::Method<_Class>::forwardDispatcher, 1);
+        stack.pushcclosure(Method<_Class>::forwardDispatcher, 1);
     }
 
 private:
@@ -316,7 +314,7 @@ private:
 
         Args args(stack.getInterface());
         ArgsIterator argIter(args,
-            ArgsIterator::getMethodSequence() == ARGS_EVALUATE::RIGHT_TO_LEFT, 1);
+            ArgsIterator::getMethodSequence() == ARGS_EVALUATE::RIGHT_TO_LEFT, 0);
 
         (info->obj->*method)(static_cast<_Args>(argIter.GetAndToNext())...);
 
@@ -333,7 +331,7 @@ private:
 
         Args args(stack.getInterface());
         ArgsIterator argIter(args,
-            ArgsIterator::getMethodSequence() == ARGS_EVALUATE::RIGHT_TO_LEFT, 1);
+            ArgsIterator::getMethodSequence() == ARGS_EVALUATE::RIGHT_TO_LEFT, 0);
 
         _Rt rt = (info->obj->*method)(static_cast<_Args>(argIter.GetAndToNext())...);
 

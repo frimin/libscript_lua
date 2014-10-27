@@ -36,8 +36,6 @@
 
 _NAME_BEGIN
 
-Arg::Arg(Stack stack, int index) : Stack(stack), _index(index) { }
-Arg::Arg(const Arg& arg) : Stack(arg) { _index = arg._index; }
 Args::Args(RawInterface raw) : Stack(raw) { _top = gettop(); }
 Args::Args(const Args& args) : Stack(args) { _top = args._top; }
 

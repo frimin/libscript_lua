@@ -37,7 +37,7 @@
 
 _NAME_BEGIN
 
-Script::Script(MemAllocFunc alloc, void* ud) : Stack(nullptr)
+Script::Script(bool openlibs, MemAllocFunc alloc, void* ud) : Stack(nullptr)
 {
     RawInterface raw = nullptr;
 
@@ -48,7 +48,8 @@ Script::Script(MemAllocFunc alloc, void* ud) : Stack(nullptr)
 
     _c_state = raw;
 
-    openlibs_L();
+    if (openlibs)
+        openlibs_L();
 }
 
 static void *l_alloc(void *ud, void *ptr, size_t osize, size_t nsize) 
@@ -63,7 +64,7 @@ static void *l_alloc(void *ud, void *ptr, size_t osize, size_t nsize)
         return alloc->alloc(nsize);
 }
 
-Script::Script(MemAllocation* alloc) : Stack(nullptr)
+Script::Script(bool openlibs, MemAllocation* alloc) : Stack(nullptr)
 {
     RawInterface raw = nullptr;
 
@@ -74,7 +75,8 @@ Script::Script(MemAllocation* alloc) : Stack(nullptr)
 
     _c_state = raw;
 
-    openlibs_L();
+    if (openlibs)
+        openlibs_L();
 }
 
 Script::~Script()

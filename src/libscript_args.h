@@ -42,84 +42,6 @@
 
 _NAME_BEGIN
 
-class EXPORT Arg final : public Stack
-{
-public:
-    Arg(Stack stack, int index);
-    Arg(const Arg& arg);
-
-    const char* typeName()  { return typename_L(_index); }
-    TYPE type()             { return Stack::type(_index); }
-
-    /// Try to conversion to base types
-    bool toBoolean()        { return toboolean(_index); }
-    long long toInteger()   { return tointeger(_index); }
-    double toNumber()       { return tonumber(_index); }
-    void* toLightUserdata() { return touserdata(_index); }
-    const char* toString()  { const char* str = tostring(_index); return str ? str : ""; }
-    Value toValue()         { pushvalue(_index); return *this; }
-
-    template<typename _Class> _Class* toClass()
-    { 
-        std::string metaname = 
-            std::string(METATABLEPREFIX) + typeid(_Class).name();
-
-        checkudata_L(_index, metaname.c_str());
-
-        auto info = (UserData<_Class>*)touserdata(_index);
-
-        return info->readonly ? nullptr : info->obj;
-    }
-
-    template<typename _Class> const _Class* toConstClass()
-    {
-        std::string metaname =
-            std::string(METATABLEPREFIX) + typeid(_Class).name();
-
-        checkudata_L(_index, metaname.c_str());
-
-        auto info = (UserData<_Class>*)touserdata(_index);
-
-        return info->obj;
-    }
-
-    template<typename _Class> const UserData<_Class>* toClassInfo()
-    {
-        std::string metaname =
-            std::string(METATABLEPREFIX) + typeid(_Class).name();
-
-        checkudata_L(_index, metaname.c_str());
-
-        return (UserData<_Class>*)touserdata(_index);
-    }
-
-    bool isBoolean()        { return isboolean(_index); }
-    bool isCFunction()      { return iscfunction(_index); }
-    bool isFunction()       { return isfunction(_index); }
-    bool isLightUserdata()  { return islightuserdata(_index); }
-    bool isNil()            { return isnil(_index); }
-    bool isNoneOrNil()      { return isnoneornil(_index); }
-    bool isNumber()         { return isnumber(_index); }
-    bool isString()         { return isstring(_index); }
-    bool isTable()          { return istable(_index); }
-    bool isThread()         { return isthread(_index); }
-    bool isUserdata()       { return isuserdata(_index); }
-
-    operator bool()         { return toBoolean(); }
-    operator int()          { return toInteger(); }
-    operator long()         { return toInteger(); }
-    operator long long()    { return toInteger(); }
-    operator float()        { return toNumber(); }
-    operator double()       { return toNumber(); }
-    operator void*()        { return toLightUserdata(); }
-    operator const char*()  { return toString(); }
-
-    int getIndex() const    { return _index; }
-
-private:
-    int _index;
-};
-
 class EXPORT Args : public Stack
 {
 public:
@@ -128,7 +50,7 @@ public:
 
     /// @brief Get a argument
     /// (Index begin with 1)
-    Arg operator[](int i) { Arg arg(*this, i); return arg; }
+    StackValue operator[](int i) { StackValue v(*this, i); return v; }
 
     int count() const { return _top; }
 

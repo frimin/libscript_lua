@@ -17,11 +17,6 @@ public:
     {
         std::cout << "free" << std::endl;
     }
-
-    void foo()
-    {
-        std::cout << "foo"<<std::endl;
-    }
     
     int foo2()
     {
@@ -58,7 +53,6 @@ int main()
         });
             ;
 
-
         script.execString(R"( 
             a = MyClass()
             a:foo()
@@ -73,10 +67,12 @@ int main()
             a:free()
             b:free()
 
-            c = MyClass(0)
+            c = MyClass(6666)
         )");
 
-        std::cout << "stack top:"<< script.gettop() << std::endl;
+        MyClass* c = script["c"].toClass<MyClass>();
+
+        std::cout << "c's value is :" << c->n << std::endl;
     }
 
     std::cout << ":)" << std::endl;

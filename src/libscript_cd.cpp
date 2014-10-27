@@ -97,12 +97,12 @@ ArgsIterator::ArgsIterator(Args args, bool reverse, int ignoreBottom) : Stack(ar
     }
 }
 
-Arg ArgsIterator::GetAndToNext()
+StackValue ArgsIterator::GetAndToNext()
 {
     if (_begin == _end)
         SCRIPT_EXCEPTION("Bad iterator");
 
-    Arg result(*this, _begin);
+    StackValue result(*this, _begin);
 
     _begin += _step;
 
