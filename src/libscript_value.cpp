@@ -45,7 +45,7 @@ _NAME_BEGIN
 
 struct DataSourcesDispatcher
 {
-    DataSourcesDispatcher(ValueDataSources* dataSources)
+    DataSourcesDispatcher(IValueDataSources* dataSources)
     {
         if (_dataSources)
             _dataSources->pushData();
@@ -56,15 +56,15 @@ struct DataSourcesDispatcher
             _dataSources->popData();
     }
 
-    ValueDataSources* _dataSources;
+    IValueDataSources* _dataSources;
 };
 
-StackValue::StackValue(RawInterface raw, int index, ValueDataSources* dataSource) : Stack(raw), _index(index), _dataSources(dataSource)
+StackValue::StackValue(RawInterface raw, int index, IValueDataSources* dataSource) : Stack(raw), _index(index), _dataSources(dataSource)
 {
 
 }
 
-StackValue::StackValue(const Stack& stack, int index, ValueDataSources* dataSource) : Stack(stack), _index(index), _dataSources(dataSource)
+StackValue::StackValue(const Stack& stack, int index, IValueDataSources* dataSource) : Stack(stack), _index(index), _dataSources(dataSource)
 {
 
 }
@@ -103,7 +103,7 @@ long long StackValue::toInteger()
     return tointeger(_index); 
 }
 
-const char *StackValue::toLString(std::size_t *len) 
+const char* StackValue::toLString(std::size_t* len) 
 { 
     DataSourcesDispatcher dispatcher(_dataSources);
     return tolstring(_index, len);
@@ -315,15 +315,6 @@ Value::Value(const Stack& stack) : StackValue(stack, -1, this)
 
     _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 }
-/*
-Value::Value(const StackValue& stackvalue) : StackValue(stackvalue, -1, this)
-{
-    /// copy arg and push onto the stack
-    this->pushvalue(stackvalue.getIndex());
-
-    _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
-}
-*/
 
 Value::Value(const Value& copy) : StackValue(copy, -1, this)
 {

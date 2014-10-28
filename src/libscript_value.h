@@ -42,9 +42,12 @@
 
 _NAME_BEGIN
 
-struct ValueDataSources
+/// @brief Interface of get stack value
+struct IValueDataSources
 {
+    /// @brief Will be invoked before using the stack value.
     virtual void pushData() = 0;
+    /// @brief Will be invoked after using the stack value.
     virtual void popData() = 0;
 };
 
@@ -53,9 +56,9 @@ class EXPORT StackValue : public Stack
 {
 public:
     /// @brief Initialization from RawInterface and given index
-    StackValue(RawInterface raw, int index, ValueDataSources* dataSource = NULL);
+    StackValue(RawInterface raw, int index, IValueDataSources* dataSource = NULL);
     /// @brief Initialization from other stack and given index
-    StackValue(const Stack& stack, int index, ValueDataSources* dataSource = NULL);
+    StackValue(const Stack& stack, int index, IValueDataSources* dataSource = NULL);
     /// @brief Copy other
     StackValue(const StackValue& stackvalue);
 
@@ -83,7 +86,7 @@ public:
     /// @brief Converts the value to a C string.
     /// If len is not NULL, it also sets *len with the string length
     /// The value must be a string or a number; otherwise, the function returns NULL
-    const char *toLString(std::size_t *len);
+    const char* toLString(std::size_t* len);
 
     /// @brief Converts the value to the double
     /// The value must be a number or a string convertible to a number. otherwise, returns 0.
@@ -177,10 +180,10 @@ private:
 
 private:
     int _index;
-    ValueDataSources* _dataSources;
+    IValueDataSources* _dataSources;
 };
 
-class EXPORT Value : public StackValue, private ValueDataSources
+class EXPORT Value : public StackValue, private IValueDataSources
 {
     friend class Script;
 public:
