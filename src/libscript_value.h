@@ -42,17 +42,156 @@
 
 _NAME_BEGIN
 
-class StackValue;
+struct ValueDataSources
+{
+    virtual void pushData() = 0;
+    virtual void popData() = 0;
+};
 
-class EXPORT Value : public Stack
+/// @brief Represents a value from stack
+class EXPORT StackValue : public Stack
+{
+    struct DataSourcesDispatcher
+    {
+        DataSourcesDispatcher(ValueDataSources* dataSources);
+        ~DataSourcesDispatcher();
+        ValueDataSources* _dataSources;
+    };
+public:
+    /// @brief Initialization from RawInterface and given index
+    StackValue(RawInterface raw, int index, ValueDataSources* dataSource = NULL);
+    /// @brief Initialization from other stack and given index
+    StackValue(const Stack& stack, int index, ValueDataSources* dataSource = NULL);
+    /// @brief Copy other
+    StackValue(const StackValue& stackvalue);
+
+    /// @brief Returns the name of the type of the value.
+    const char* typeName();
+
+    /// @brief Returns the type of the value,
+    TYPE type();
+
+    /// @brief Converts the value to a boolean value, 
+    /// returns true for any value different from false and nil
+    /// otherwise it returns false, If you want to accept only 
+    //// actual boolean values, use StackValue::isBoolean to test the value's type
+    bool toBoolean();
+
+    /// @brief Converts a value  to a C function.
+    /// That value must be a C function; otherwise, returns NULL.
+    CFunction toCFunction();
+    
+    /// @brief Converts the value to the signed integral type. 
+    /// The value must be a number or a string convertible to a number.
+    /// otherwise, lua_tointegerx returns 0.
+    long long toInteger();
+
+    /// @brief Converts the value to a C string.
+    /// If len is not NULL, it also sets *len with the string length
+    /// The value must be a string or a number; otherwise, the function returns NULL
+    const char *toLString(std::size_t *len);
+
+    /// @brief Converts the value to the double
+    /// The value must be a number or a string convertible to a number. otherwise, returns 0.
+    double toNumber();
+
+    /// @brief Converts the value to a generic C pointer (void*).
+    /// The value can be a ClassInfo, a table, a thread, or a function;
+    /// otherwise, returns NULL. Different objects will give different pointers.
+    /// There is no way to convert the pointer back to its original value.
+    const void* toPointer();
+
+    /// @brief To the ClassInfo value 
+    /// If the value is a full ClassInfo returns its block address. 
+    /// If the value is a light ClassInfo, returns its pointer. Otherwise, returns NULL.
+    void* toUserdata();
+
+    /// @brief Equivalent to StackValue::toLString with len equal to NULL.
+    const char* toString();
+
+    /// @brief To a class point.
+    /// If the value is a full ClassInfo and have correct metatable in the registry, returns its pointer
+    template<typename _Class> _Class* toClass()
+    {
+        return (_Class*)_toClass(typeid(_Class).name());
+    }
+
+    /// @brief To a class const point.
+    /// If the value is a full ClassInfo and have correct metatable in the registry, returns its const pointer
+    template<typename _Class> const _Class* toConstClass()
+    {
+        return (_Class*)_toConstClass(typeid(_Class).name());
+    }
+
+    /// @brief To a class info block point.
+    template<typename _Class> const ClassInfo<_Class>* toClassInfo()
+    {
+        return (ClassInfo<_Class>*)_toClassInfo(typeid(_Class).name());
+    }
+
+    /// @brief Returns true if the value is a boolean, and false otherwise.
+    bool isBoolean();
+
+    /// @brief Returns true if the value is a C function, and false otherwise.
+    bool isCFunction();
+
+    /// @brief Returns true if the value is a function(either C or Lua), and false otherwise.
+    bool isFunction();
+
+    /// @brief Returns true if the value is nil, and false otherwise.
+    bool isNil();
+
+    /// @brief Returns true if this value is not valid, and false otherwise.
+    bool isNone();
+
+    /// @brief Returns true if this value is not valid or if the value is nil, and false otherwise.
+    bool isNoneOrNil();
+    
+    /// @brief Returns true if the value is a number or a string convertible to a number, and false otherwise.
+    bool isNumber();
+
+    /// @brief Returns true if the value is a string or a number (which is always convertible to a string), and false otherwise.
+    bool isString();
+
+    /// @brief Returns true if the value is a table, and false otherwise.
+    bool isTable();
+
+    /// @brief Returns true if the value is a table, and false otherwise.
+    bool isThread();
+
+    /// @brief Returns true if the value is a userdata (either full or light), and false otherwise.
+    bool isUserdata();
+
+    operator bool()         { return toBoolean(); }
+    operator int()          { return toInteger(); }
+    operator long()         { return toInteger(); }
+    operator long long()    { return toInteger(); }
+    operator float()        { return toNumber(); }
+    operator double()       { return toNumber(); }
+    operator void*()        { return toUserdata(); }
+    operator const char*()  { return toString(); }
+
+    void setIndex(int index){ _index = index; }
+    int getIndex() const    { return _index; }
+
+    StackValue& operator = (const StackValue& copy);
+
+private:
+    void* _toClass(const char* metaname);
+    void* _toConstClass(const char* metaname);
+    const void* _toClassInfo(const char* metaname);
+
+private:
+    int _index;
+    ValueDataSources* _dataSources;
+};
+
+class EXPORT Value : public StackValue, private ValueDataSources
 {
     friend class Script;
 public:
-    static const struct P_Nil {} Nil;
-
     Value(RawInterface raw);
     Value(const Stack& stack);
-    Value(const StackValue& arg);
     Value(const Value& copy);
     virtual ~Value();
 
@@ -69,130 +208,19 @@ public:
     void reset();
     void reset(Stack& stack);
 
-    const char* typeName();
-    TYPE type();
-
-    /// Try to conversion to base types
-    bool toBoolean();
-    long long toInteger();
-    double toNumber();
-    void* toUserData();
-    const char* toString();
-
-    template<typename _Class> _Class* toClass()
-    {
-        return (_Class*)_toClass(typeid(_Class).name());
-    }
-
-    template<typename _Class> const _Class* toConstClass()
-    {
-        return (_Class*)_toConstClass(typeid(_Class).name());
-    }
-
-    template<typename _Class> const UserData<_Class>* toClassInfo()
-    {
-        return (UserData<_Class>*)_toClassInfo(typeid(_Class).name());
-    }
-
-    bool isBoolean();
-    bool isCFunction();
-    bool isFunction();
-    bool isLightUserdata();
-    bool isNil();
-    bool isNumber();
-    bool isString();
-    bool isTable();
-    bool isThread();
-    bool isUserdata();
-
-    operator bool();
-    operator int();
-    operator long();
-    operator long long();
-    operator float();
-    operator double();
-    operator void*();
-    operator const char*();
-
     bool operator ==(Value& value);
     bool operator != (Value& value);
     Value& operator = (Value& copy);
 
-protected:
+private:
+    virtual void pushData();
+    virtual void popData();
+
     ValueHandler* _handler;
 
 private:
-    void* _toClass(const char* metaname);
-    void* _toConstClass(const char* metaname);
-    const void* _toClassInfo(const char* metaname);
-
-private:
     static void endOfHandlerRefBuffer();
-
     void releaseHandler();
-};
-
-class EXPORT StackValue final : public Stack
-{
-public:
-    StackValue(Stack stack, int index);
-    StackValue(const StackValue& arg);
-
-    const char* typeName()  { return typename_L(_index); }
-    TYPE type()             { return Stack::type(_index); }
-
-    /// Try to conversion to base types
-    bool toBoolean()        { return toboolean(_index); }
-    long long toInteger()   { return tointeger(_index); }
-    double toNumber()       { return tonumber(_index); }
-    void* toUserdata() { return touserdata(_index); }
-    const char* toString()  { const char* str = tostring(_index); return str ? str : ""; }
-    Value toValue()         { pushvalue(_index); return *this; }
-
-    template<typename _Class> _Class* toClass()
-    {
-        return (_Class*)_toClass(typeid(_Class).name());
-    }
-
-    template<typename _Class> const _Class* toConstClass()
-    {
-        return (_Class*)_toConstClass(typeid(_Class).name());
-    }
-
-    template<typename _Class> const UserData<_Class>* toClassInfo()
-    {
-        return (UserData<_Class>*)_toClassInfo(typeid(_Class).name());
-    }
-
-    bool isBoolean()        { return isboolean(_index); }
-    bool isCFunction()      { return iscfunction(_index); }
-    bool isFunction()       { return isfunction(_index); }
-    bool isNil()            { return isnil(_index); }
-    bool isNoneOrNil()      { return isnoneornil(_index); }
-    bool isNumber()         { return isnumber(_index); }
-    bool isString()         { return isstring(_index); }
-    bool isTable()          { return istable(_index); }
-    bool isThread()         { return isthread(_index); }
-    bool isUserdata()       { return isuserdata(_index); }
-
-    operator bool()         { return toBoolean(); }
-    operator int()          { return toInteger(); }
-    operator long()         { return toInteger(); }
-    operator long long()    { return toInteger(); }
-    operator float()        { return toNumber(); }
-    operator double()       { return toNumber(); }
-    operator void*()        { return toUserdata(); }
-    operator const char*()  { return toString(); }
-
-    int getIndex() const    { return _index; }
-
-private:
-    void* _toClass(const char* metaname);
-    void* _toConstClass(const char* metaname);
-    const void* _toClassInfo(const char* metaname);
-
-private:
-    int _index;
 };
 
 /// @}

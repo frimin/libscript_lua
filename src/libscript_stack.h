@@ -42,13 +42,15 @@ _NAME_BEGIN
 /// @addtogroup script
 /// @{
 
-/// @brief Stack operations
+/// @brief Stack base operations
 /// Packaging lua API and constants
 class EXPORT Stack
 {
     friend class Value;
 public:
     static int REGISTRYINDEX();
+
+    static const struct P_Nil {} Nil;
 
     enum TYPE
     {
@@ -77,13 +79,13 @@ public:
 
     enum ARITHOP
     {
-        OP_ADD = 0,
-        OP_SUB = 1,
-        OP_MUL = 2,
-        OP_DIV = 3,
-        OP_MOD = 4,
-        OP_POW = 5,
-        OP_UNM = 6,
+        OP_ADD = 0, // +
+        OP_SUB = 1, // -
+        OP_MUL = 2, // *
+        OP_DIV = 3, // /
+        OP_MOD = 4, // %
+        OP_POW = 5, // ^
+        OP_UNM = 6, // unary -
     };
 
     enum GCBEHAVIOR
@@ -208,7 +210,7 @@ public:
     CFunction tocfunction(int index);
     long long tointeger(int index);
     long long tointegerx(int index, int* isnum);
-    const char* tolstring(int index, size_t* len);
+    const char* tolstring(int index, std::size_t* len);
     double tonumber(int index);
     double tonumberx(int index, int* isnum);
     const void* topointer(int index);

@@ -43,13 +43,188 @@
 
 _NAME_BEGIN
 
-#define NOT_STRING_PRINT_BUFF 64
-static const char* _s_not_string = "[Is %s]";
-static char _s_not_string_print_buff[NOT_STRING_PRINT_BUFF];
+StackValue::DataSourcesDispatcher::DataSourcesDispatcher(ValueDataSources* dataSources) : _dataSources(dataSources)
+{
+    if (_dataSources)
+        _dataSources->pushData();
+}
 
-const Value::P_Nil Value::Nil = Value::P_Nil();
+StackValue::DataSourcesDispatcher::~DataSourcesDispatcher()
+{
+    if (_dataSources)
+        _dataSources->popData();
+}
 
-// To prevent when copy ray::Value to call many Lua APIs
+StackValue::StackValue(RawInterface raw, int index, ValueDataSources* dataSource) : Stack(raw), _index(index), _dataSources(dataSource)
+{
+
+}
+
+StackValue::StackValue(const Stack& stack, int index, ValueDataSources* dataSource) : Stack(stack), _index(index), _dataSources(dataSource)
+{
+
+}
+
+StackValue::StackValue(const StackValue& stackvalue) : Stack(stackvalue), _dataSources(NULL)
+{
+    _index = stackvalue._index;
+}
+
+const char* StackValue::typeName()  { 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return typename_L(_index); 
+}
+
+Stack::TYPE StackValue::type()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return Stack::type(_index); 
+}
+
+bool StackValue::toBoolean()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return toboolean(_index); 
+}
+
+CFunction StackValue::toCFunction()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return tocfunction(_index);
+}
+
+long long StackValue::toInteger()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return tointeger(_index); 
+}
+
+const char *StackValue::toLString(std::size_t *len) 
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return tolstring(_index, len);
+}
+
+double StackValue::toNumber()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return tonumber(_index); 
+}
+
+const void* StackValue::toPointer() 
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return topointer(_index); 
+}
+
+void* StackValue::toUserdata()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return touserdata(_index); 
+}
+
+const char* StackValue::toString()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return tostring(_index); 
+}
+
+void* StackValue::_toClass(const char* metaname)
+{
+    DataSourcesDispatcher dispatcher(_dataSources);
+    checkudata_L(_index, metaname);
+    auto info = (ClassInfo<VOID_T>*)touserdata(_index);
+    return info->readonly ? nullptr : info->obj;
+}
+
+void* StackValue::_toConstClass(const char* metaname)
+{
+    DataSourcesDispatcher dispatcher(_dataSources);
+    checkudata_L(_index, metaname);
+    auto info = (ClassInfo<VOID_T>*)touserdata(_index);
+    return info->obj;
+}
+
+const void* StackValue::_toClassInfo(const char* metaname)
+{
+    DataSourcesDispatcher dispatcher(_dataSources);
+    checkudata_L(_index, metaname);
+    return (ClassInfo<VOID_T>*)touserdata(_index);
+}
+
+bool StackValue::isBoolean()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return isboolean(_index);
+}
+
+bool StackValue::isCFunction()
+{
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return iscfunction(_index);
+}
+
+bool StackValue::isFunction()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return isfunction(_index);
+}
+
+bool StackValue::isNil()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return isnil(_index);
+}
+
+bool StackValue::isNone()
+{
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return isnone(_index); 
+}
+
+bool StackValue::isNoneOrNil()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return isnoneornil(_index); 
+}
+
+bool StackValue::isNumber()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return isnumber(_index); 
+}
+
+bool StackValue::isString()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return isstring(_index); 
+}
+
+bool StackValue::isTable()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return istable(_index); 
+}
+
+bool StackValue::isThread()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return isthread(_index); 
+}
+
+bool StackValue::isUserdata()
+{ 
+    DataSourcesDispatcher dispatcher(_dataSources);
+    return isuserdata(_index);
+}
+
+StackValue& StackValue::operator = (const StackValue& copy)
+{
+    _index = copy._index;
+    return *this;
+}
+
+// To prevent when copy Value to call many Lua APIs
 // (Call the luaL_ref and luaL_unref neet so many time)
 class ValueHandler
 {
@@ -121,7 +296,7 @@ private:
 std::vector<ValueHandler*> ValueHandler::_s_free_list;
 std::size_t ValueHandler::_s_using_count = 0;
 
-Value::Value(RawInterface raw) : Stack(raw)
+Value::Value(RawInterface raw) : StackValue(raw, -1, this)
 {
     if (gettop() == 0)
         SCRIPT_EXCEPTION("No element in the stack");
@@ -129,23 +304,24 @@ Value::Value(RawInterface raw) : Stack(raw)
     _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 }
 
-Value::Value(const Stack& stack) : Stack(stack)
+Value::Value(const Stack& stack) : StackValue(stack, -1, this)
 {
     if (gettop() == 0)
         SCRIPT_EXCEPTION("No element in the stack");
 
     _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 }
-
-Value::Value(const StackValue& arg) : Stack(arg)
+/*
+Value::Value(const StackValue& stackvalue) : StackValue(stackvalue, -1, this)
 {
     /// copy arg and push onto the stack
-    this->pushvalue(arg.getIndex());
+    this->pushvalue(stackvalue.getIndex());
 
     _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 }
+*/
 
-Value::Value(const Value& copy) : Stack(copy)
+Value::Value(const Value& copy) : StackValue(copy, -1, this)
 {
     _handler = ValueHandler::ref(copy._handler);
 }
@@ -204,221 +380,14 @@ void Value::reset(Stack& stack)
     _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 }
 
-const char* Value::typeName()
+void Value::pushData()
 {
-    pushRefSafe(NoneMask);
-    const char* result = typename_L(-1);
+    this->pushRefSafe(NoneMask);
+}
+void Value::popData()
+{
     pop(1);
-    return result;
 }
-
-Stack::TYPE Value::type()
-{
-    pushRefSafe(NoneMask);
-    TYPE result = Stack::type(-1);
-    pop(1);
-    return result;
-}
-
-bool Value::toBoolean()
-{
-    bool result;
-    pushRefSafe(NoneMask);
-    result = toboolean(-1);
-    pop(1);
-    return result;
-}
-
-long long Value::toInteger()
-{
-    int result;
-    pushRefSafe(NoneMask);
-    result = tointeger(-1);
-    pop(1);
-    return result;
-}
-
-double Value::toNumber()
-{
-    double result;
-    pushRefSafe(NoneMask);
-    result = tonumber(-1);
-    pop(1);
-    return result;
-}
-
-void* Value::toUserData()
-{
-    void* result;
-    pushRefSafe(NoneMask);
-    result = touserdata(-1);
-    pop(1);
-    return result;
-}
-
-const char* Value::toString()
-{
-    const char* result;
-    pushRefSafe(NoneMask);
-    result = tostring(-1);
-    pop(1);
-
-    if (result == nullptr)
-    {
-        std::sprintf(_s_not_string_print_buff, _s_not_string, typeName());
-        result = _s_not_string_print_buff;
-    }
-
-    return result;
-}
-
-void* Value::_toClass(const char* metaname)
-{
-    pushRef(T_Userdata);
-    checkudata_L(-1, metaname);
-    auto info = (UserData<VOID_T>*)touserdata(-1);
-    pop(1);
-    return info->readonly ? nullptr : info->obj;
-}
-
-void* Value::_toConstClass(const char* metaname)
-{
-    pushRef(T_Userdata);
-    checkudata_L(-1, metaname);
-    auto info = (UserData<VOID_T>*)touserdata(-1);
-    pop(1);
-    return info->obj;
-}
-
-const void* Value::_toClassInfo(const char* metaname)
-{
-    pushRef(T_Userdata);
-    checkudata_L(-1, metaname);
-    auto block = (UserData<VOID_T>*)touserdata(-1);
-    pop(1);
-    return block;
-}
-
-bool Value::isBoolean()
-{
-    pushRefSafe(NoneMask);
-    bool b = isboolean(-1);
-    pop(1);
-    return b;
-}
-
-bool Value::isCFunction()
-{
-    pushRefSafe(NoneMask);
-    bool b = iscfunction(-1);
-    pop(1);
-    return b;
-}
-
-bool Value::isFunction()       
-{
-    pushRefSafe(NoneMask);
-    bool b = isfunction(-1);
-    pop(1);
-    return b;
-}
-
-bool Value::isLightUserdata()  
-{
-    pushRefSafe(NoneMask);
-    bool b = islightuserdata(-1);
-    pop(1);
-    return b;
-}
-
-bool Value::isNil()
-{
-    pushRefSafe(NoneMask);
-    bool b = isnil(-1);
-    pop(1);
-    return b;
-}
-
-bool Value::isNumber()
-{
-    pushRefSafe(NoneMask);
-    bool b = isnumber(-1);
-    pop(1);
-    return b;
-}
-
-bool Value::isString()
-{
-    pushRefSafe(NoneMask);
-    bool b = isstring(-1);
-    pop(1);
-    return b;
-}
-
-bool Value::isTable()
-{ 
-    pushRefSafe(NoneMask);
-    bool b = istable(-1);
-    pop(1);
-    return b;
-}
-
-bool Value::isThread()
-{ 
-    pushRefSafe(NoneMask);
-    bool b = isthread(-1);
-    pop(1);
-    return b;
-}
-
-bool Value::isUserdata()
-{ 
-    pushRefSafe(NoneMask);
-    bool b = isuserdata(-1);
-    pop(1);
-    return b;
-}
-
-Value::operator bool()
-{
-    return toBoolean();
-}
-
-Value::operator int()
-{
-    return toInteger();
-}
-
-Value::operator long()
-{
-    return toInteger();
-}
-
-Value::operator long long()
-{
-    return toInteger();
-}
-
-Value::operator float()
-{
-    return toNumber();
-}
-
-Value::operator double()
-{
-    return toNumber();
-}
-
-Value::operator void*()
-{
-    return toUserData();
-}
-
-Value::operator const char*()
-{
-    return toString();
-}
-
 
 bool Value::operator ==(Value& value)
 {
@@ -472,39 +441,6 @@ void Value::endOfHandlerRefBuffer()
         SCRIPT_EXCEPTION("Some handler is not release");
 
     ValueHandler::clearFree();
-}
-
-StackValue::StackValue(Stack stack, int index) : Stack(stack), _index(index) {
-
-}
-
-StackValue::StackValue(const StackValue& arg) : Stack(arg) { 
-    _index = arg._index; 
-}
-
-void* StackValue::_toClass(const char* metaname)
-{
-    checkudata_L(_index, metaname);
-
-    auto info = (UserData<VOID_T>*)touserdata(_index);
-
-    return info->readonly ? nullptr : info->obj;
-}
-
-void* StackValue::_toConstClass(const char* metaname)
-{
-    checkudata_L(_index, metaname);
-
-    auto info = (UserData<VOID_T>*)touserdata(_index);
-
-    return info->obj;
-}
-
-const void* StackValue::_toClassInfo(const char* metaname)
-{
-    checkudata_L(_index, metaname);
-
-    return (UserData<VOID_T>*)touserdata(_index);
 }
 
 _NAME_END

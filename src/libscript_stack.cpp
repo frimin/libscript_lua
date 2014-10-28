@@ -44,6 +44,8 @@ int Stack::REGISTRYINDEX()
     return LUA_REGISTRYINDEX;
 }
 
+const Stack::P_Nil Stack::Nil = Stack::P_Nil();
+
 Stack::Stack(RawInterface state) : _c_state(state)
 {
 
@@ -473,7 +475,7 @@ long long Stack::tointegerx(int index, int* isnum)
     return lua_tointegerx(LUASTATE(_c_state), index, isnum);
 }
 
-const char* Stack::tolstring(int index, size_t *len)
+const char* Stack::tolstring(int index, std::size_t *len)
 {
     return lua_tolstring(LUASTATE(_c_state), index, len);
 }

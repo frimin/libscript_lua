@@ -218,7 +218,7 @@ private:
 
         std::string metaname(typeid(_Class).name());
 
-        auto info = (UserData<_Class>*)stack.newuserdata(sizeof(UserData<_Class>));
+        auto info = (ClassInfo<_Class>*)stack.newuserdata(sizeof(ClassInfo<_Class>));
 
         info->obj = obj;
         info->ref = false;
@@ -259,7 +259,7 @@ private:
     {
         Stack stack(raw);
 
-        auto info = (UserData<_Class>*)stack.touserdata(1);
+        auto info = (ClassInfo<_Class>*)stack.touserdata(1);
 
         auto w = (Wrapper<_Method>*)stack.touserdata(Stack::upvalueindex(1));
 
@@ -284,7 +284,7 @@ private:
             return args.error_L("Bad arg");
         }
 
-        auto info = (UserData<_Class>*)args.touserdata(1);
+        auto info = (ClassInfo<_Class>*)args.touserdata(1);
 
         auto w = (Wrapper<Method<_Class>::Forward>*)args.touserdata(Stack::upvalueindex(1));
 
@@ -305,7 +305,7 @@ private:
     }
 
     template <typename ... _Args>
-    static int caller(Stack& stack, UserData<_Class>* info, void (_Class::*method)(_Args ...))
+    static int caller(Stack& stack, ClassInfo<_Class>* info, void (_Class::*method)(_Args ...))
     {
         if (info->readonly)
         {
@@ -322,7 +322,7 @@ private:
     }
 
     template <typename _Rt, typename ... _Args>
-    static int caller(Stack& stack, UserData<_Class>* info, _Rt(_Class::*method)(_Args ...))
+    static int caller(Stack& stack, ClassInfo<_Class>* info, _Rt(_Class::*method)(_Args ...))
     {
         if (info->readonly)
         {
@@ -343,7 +343,7 @@ private:
     }
 
     template <typename ... _Args>
-    static int caller(Stack& stack, UserData<_Class>* info, void (_Class::*method)(_Args ...) const)
+    static int caller(Stack& stack, ClassInfo<_Class>* info, void (_Class::*method)(_Args ...) const)
     {
         Args args(stack.getInterface());
         ArgsIterator argIter(args,
@@ -355,7 +355,7 @@ private:
     }
 
     template <typename _Rt, typename ... _Args>
-    static int caller(Stack& stack, UserData<_Class>* info, _Rt(_Class::*method)(_Args ...) const)
+    static int caller(Stack& stack, ClassInfo<_Class>* info, _Rt(_Class::*method)(_Args ...) const)
     {
         Args args(stack.getInterface());
         ArgsIterator argIter(args,
@@ -396,7 +396,7 @@ public:
 
         Stack stack(raw);
 
-        UserData<_Class>* info = (UserData<_Class>*)stack.touserdata(1);
+        ClassInfo<_Class>* info = (ClassInfo<_Class>*)stack.touserdata(1);
 
         if (info->ref)
             return 0;
@@ -420,7 +420,7 @@ public:
 
         auto w = (Wrapper<Destroyer>*)stack.touserdata(Stack::upvalueindex(1));
 
-        UserData<_Class>* info = (UserData<_Class>*)stack.touserdata(1);
+        ClassInfo<_Class>* info = (ClassInfo<_Class>*)stack.touserdata(1);
 
         if (info->ref)
             return 0;

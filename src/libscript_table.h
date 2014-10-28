@@ -46,19 +46,21 @@ _NAME_BEGIN
 class EXPORT Table FINAL : public Value
 {
 public:
-    class EXPORT Accessor final
+    /// @brief Access table contents
+    /// Don't to new this class, that will be damage stack.
+    class EXPORT Accessor FINAL
     {
     public:
         Accessor(Table table);
         ~Accessor();
         bool end();
-        void reset();
+        
         /// @brief To next key / value
         /// @warning Do not call Value::toString directly on a key
         /// Visit : http://www.lua.org/manual/5.2/manual.html#lua_next
         void next();
-        Value& key();
-        Value& value();
+        StackValue& key();
+        StackValue& value();
 
     private:
         Accessor(const Accessor& copy) = delete;
@@ -67,8 +69,8 @@ public:
     private:
         bool _valid;
         Value _table;
-        Value* _cur_key;
-        Value* _cur_value;
+        StackValue _key;
+        StackValue _value;
     };
 
     Table(const Stack& stack);

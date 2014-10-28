@@ -77,7 +77,7 @@ typedef int         (*ChunkWriterFunc) (RawInterface raw, const void* p, size_t 
 typedef const char* (*ChunkReaderFunc) (RawInterface raw, void* data, size_t* size);
 typedef void*       (*MemAllocFunc) (void *ud, void *ptr, size_t osize, size_t nsize);
 
-template<typename _Class> struct UserData {
+template<typename _Class> struct ClassInfo {
     _Class* obj;
     bool ref;
     bool readonly;

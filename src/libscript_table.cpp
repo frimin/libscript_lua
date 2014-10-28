@@ -146,23 +146,22 @@ Table Table::operator[](const char *key)
 // class Table::Accessor
 // +----------------------------------------------------------------------
 
-Table::Accessor::Accessor(Table table) : _valid(true), _table(table)
+Table::Accessor::Accessor(Table table) 
+    : _valid(true), _table(table), 
+    _key(table.getInterface(), 0),
+    _value(table.getInterface(), 0)
 {
-    _cur_key = new Value(_table);
-    _cur_value = new Value(_table);
-    _cur_key->pushnil();
-    _cur_key->reset();
-
     _table.pushRef(Stack::T_Table);
+    _table.pushnil();
+    _table.pushnil();
 
     this->next();
 }
 
 Table::Accessor::~Accessor()
 {
+    // remove table from stack
     _table.pop(1);
-    delete _cur_key;
-    delete _cur_value;
 }
 
 bool Table::Accessor::end()
@@ -170,37 +169,31 @@ bool Table::Accessor::end()
     return !_valid;
 }
 
-void Table::Accessor::reset()
-{
-    _table.pushnil();
-    _cur_key->reset();
-    _table.pushnil();
-    _cur_value->reset();
-}
-
 void Table::Accessor::next()
 {
     if (!_valid)
         SCRIPT_EXCEPTION("Invalid Accessor status");
 
-    _cur_key->pushRefSafe(NoneMask);
+    // remove value from stack
+    _table.pop(1);
 
     _valid = _table.next(-2) != 0;
 
     if (_valid) {
-        _cur_value->reset();
-        _cur_key->reset();
+        // index of key / value
+        _key.setIndex(_table.gettop() - 1);
+        _value.setIndex(_table.gettop());
     }
 }
 
-Value& Table::Accessor::key()
+StackValue& Table::Accessor::key()
 {
-    return *_cur_key;
+    return _key;
 }
 
-Value& Table::Accessor::value()
+StackValue& Table::Accessor::value()
 {
-    return *_cur_value;
+    return _value;
 }
 
 _NAME_END

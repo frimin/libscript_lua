@@ -42,7 +42,16 @@
 
 _NAME_BEGIN
 
-class EXPORT Args : public Stack
+class EXPORT Arg FINAL : public StackValue
+{
+public:
+    Arg(RawInterface raw, int index);
+    Arg(Stack Stack, int index);
+
+    Value toValue();
+};
+
+class EXPORT Args FINAL : public Stack
 {
 public:
     Args(RawInterface raw);
@@ -50,7 +59,7 @@ public:
 
     /// @brief Get a argument
     /// (Index begin with 1)
-    StackValue operator[](int i) { StackValue v(*this, i); return v; }
+    Arg operator[](int i) { Arg v(*this, i); return v; }
 
     int count() const { return _top; }
 
