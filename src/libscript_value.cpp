@@ -43,17 +43,21 @@
 
 _NAME_BEGIN
 
-StackValue::DataSourcesDispatcher::DataSourcesDispatcher(ValueDataSources* dataSources) : _dataSources(dataSources)
+struct DataSourcesDispatcher
 {
-    if (_dataSources)
-        _dataSources->pushData();
-}
+    DataSourcesDispatcher(ValueDataSources* dataSources)
+    {
+        if (_dataSources)
+            _dataSources->pushData();
+    }
+    ~DataSourcesDispatcher()
+    {
+        if (_dataSources)
+            _dataSources->popData();
+    }
 
-StackValue::DataSourcesDispatcher::~DataSourcesDispatcher()
-{
-    if (_dataSources)
-        _dataSources->popData();
-}
+    ValueDataSources* _dataSources;
+};
 
 StackValue::StackValue(RawInterface raw, int index, ValueDataSources* dataSource) : Stack(raw), _index(index), _dataSources(dataSource)
 {

@@ -51,12 +51,6 @@ struct ValueDataSources
 /// @brief Represents a value from stack
 class EXPORT StackValue : public Stack
 {
-    struct DataSourcesDispatcher
-    {
-        DataSourcesDispatcher(ValueDataSources* dataSources);
-        ~DataSourcesDispatcher();
-        ValueDataSources* _dataSources;
-    };
 public:
     /// @brief Initialization from RawInterface and given index
     StackValue(RawInterface raw, int index, ValueDataSources* dataSource = NULL);
