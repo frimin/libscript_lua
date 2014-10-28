@@ -44,7 +44,7 @@
 
 _NAME_BEGIN
 
-class EXPORT Thread final : public Value
+class EXPORT Thread FINAL : public Value
 {
     friend class Script;
 public:

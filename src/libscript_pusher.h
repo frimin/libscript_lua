@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-class EXPORT Pusher final : public Stack
+class EXPORT Pusher FINAL : public Stack
 {
 public:
     Pusher(RawInterface raw);

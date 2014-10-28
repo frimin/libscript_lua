@@ -43,7 +43,7 @@
 
 _NAME_BEGIN
 
-class EXPORT TableStringDumper final : public Value
+class EXPORT TableStringDumper FINAL : public Value
 {
 public:
     TableStringDumper(const Stack& stack);

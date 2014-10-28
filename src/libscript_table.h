@@ -43,7 +43,7 @@
 
 _NAME_BEGIN
 
-class EXPORT Table final : public Value
+class EXPORT Table FINAL : public Value
 {
 public:
     class EXPORT Accessor final

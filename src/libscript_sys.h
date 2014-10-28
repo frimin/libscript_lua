@@ -48,7 +48,7 @@
 
 _NAME_BEGIN
 
-class EXPORT Script final : public Stack
+class EXPORT Script FINAL : public Stack
 {
 public:
     Script(bool openlibs = true, MemAllocFunc alloc = nullptr, void* ud = nullptr);

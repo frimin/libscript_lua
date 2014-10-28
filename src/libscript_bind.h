@@ -55,7 +55,7 @@ Value getFunction(Stack& stack, _Func func)
 Value getForwardFunction(Stack& stack, CD::Function::Forward func);
 
 template<typename _Class>
-class BindClass final
+class BindClass FINAL
 {
 public:
     typedef typename CD::Constructor<_Class>::Forward Creator;
@@ -159,7 +159,7 @@ private:
     Pusher _pusher;
 };
 
-class EXPORT Module final
+class EXPORT Module FINAL
 {
 public:
     /// @brief Definition to global table

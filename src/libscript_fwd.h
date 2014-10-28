@@ -57,6 +57,12 @@
 #define SCRIPT_EXCEPTION(s) throw std::logic_error(s)
 #endif
 
+#ifdef _CPP_98_
+#define FINAL
+#else
+#define FINAL final
+#endif
+
 struct lua_State;
 
 _NAME_BEGIN

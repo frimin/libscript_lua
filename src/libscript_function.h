@@ -44,7 +44,7 @@
 
 _NAME_BEGIN
 
-class EXPORT Function : public Value
+class EXPORT Function FINAL : public Value
 {
 public:
     Function(const Stack& stack);
