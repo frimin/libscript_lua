@@ -32,42 +32,23 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 
-#ifndef _H_LIBSCRIPT_PUSHER_H_
-#define _H_LIBSCRIPT_PUSHER_H_
+#ifndef _H_LIBSCRIPT_CALL_DISPATCHER_H_
+#define _H_LIBSCRIPT_CALL_DISPATCHER_H_
 
 #include "libscript_value.h"
+#include "libscript_pusher.h"
+#include "libscript_args.h"
 
 /// @addtogroup script
 /// @{
 
+// Call dispatcher
+
 _NAME_BEGIN
 
-
-class EXPORT Pusher FINAL : public Stack
+namespace CD
 {
-public:
-    Pusher(RawInterface raw);
-
-    /// --- Push value into stack ---
-    Pusher& push(bool b);
-    Pusher& push(long long n);
-    Pusher& push(int n);
-    Pusher& push(unsigned n);
-    Pusher& push(long n);
-    Pusher& push(const char* cstr);
-    Pusher& push(double f);
-    Pusher& push(CFunction func);
-    Pusher& push(Value::P_Nil);
-    Pusher& push(Value value);
-    Pusher& push(Class c);
-
-    void reset(RawInterface raw);
-    void reset();
-    int count() const;
-
-private:
-    int _push_count;
-};
+}
 
 /// @}
 

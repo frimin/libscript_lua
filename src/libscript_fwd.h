@@ -35,8 +35,16 @@
 #ifndef _H_LIBSCRIPT_FWD_H_
 #define _H_LIBSCRIPT_FWD_H_
 
+#ifdef _CPP_98_
+#	define FINAL
+#	define TODELETE
+#else
+#	include <tuple>
+#	define FINAL final
+#	define TODELETE = delete
+#endif
+
 #include <string>
-#include <tuple>
 #include <memory>
 #include <cassert>
 
@@ -57,18 +65,11 @@
 #define SCRIPT_EXCEPTION(s) throw std::logic_error(s)
 #endif
 
-#ifdef _CPP_98_
-#define FINAL
-#else
-#define FINAL final
-#endif
-
 struct lua_State;
 
 _NAME_BEGIN
 
 class Script;
-class ValueHandler;
 
 typedef lua_State* RawInterface;
 

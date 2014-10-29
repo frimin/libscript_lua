@@ -40,7 +40,7 @@ int main()
             case 1:
                 return new MyClass(arg[1].toInteger());
             default:
-                return nullptr;
+                return NULL;
             }
         })
             .destroy("__gc")

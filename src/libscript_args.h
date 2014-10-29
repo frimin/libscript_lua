@@ -42,15 +42,18 @@
 
 _NAME_BEGIN
 
+/// @brief Represent a argument from function stack.
 class EXPORT Arg FINAL : public StackValue
 {
 public:
     Arg(RawInterface raw, int index);
-    Arg(Stack Stack, int index);
+    Arg(Stack stack, int index);
 
+    /// @brief Returns value of copy to registry
     Value toValue();
 };
 
+/// @brief Represent function stack.
 class EXPORT Args FINAL : public Stack
 {
 public:
@@ -61,6 +64,7 @@ public:
     /// (Index begin with 1)
     Arg operator[](int i) { Arg v(*this, i); return v; }
 
+    /// @brief Returns arguments quantity
     int count() const { return _top; }
 
 private:

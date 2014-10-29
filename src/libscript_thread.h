@@ -56,14 +56,16 @@ public:
     void load(const std::string& fileName);
     void loadString(const std::string& str);
 
-    bool loadSafe(const std::string& fileName, std::string* errorOut = nullptr);
-    bool loadStringSafe(const std::string& str, std::string* errorOut = nullptr);
+    bool loadSafe(const std::string& fileName, std::string* errorOut = NULL);
+    bool loadStringSafe(const std::string& str, std::string* errorOut = NULL);
     
     Value newFunction(const std::string& script);
     Value newFunction(CFunction function);
     Value newTable();
     Value getGlobal(const std::string& name);
     Table getGlobalTable();
+
+#ifndef _CPP_98_
 
     /// @brief Resume this thread and given arguments
     template<typename ... _Args>
@@ -74,6 +76,8 @@ public:
         _ArgPusher<std::tuple<_Args ...>, sizeof...(_Args)>::push(_pusher, tuple);
         return _resume();
     }
+
+#endif
 
     /// @brief Get the number of last results
     int resultCount();
@@ -87,6 +91,9 @@ public:
     RawInterface getThreadInterface();
 
 private:
+
+#ifndef _CPP_98_
+
     template<typename _Tuple, std::size_t _ArgN>
     class _ArgPusher {
     public:
@@ -102,6 +109,8 @@ private:
     public:
         static void push(Pusher& pusher, _Tuple& tuple) { }
     };
+
+#endif
 
     void resultReset();
 

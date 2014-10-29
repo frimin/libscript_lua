@@ -39,7 +39,7 @@
 
 _NAME_BEGIN
 
-Thread::Thread(const Stack& stack) : Value(stack), _thread(nullptr), _pusher(nullptr)
+Thread::Thread(const Stack& stack) : Value(stack), _thread(NULL), _pusher(NULL)
 {
     pushRef(T_Thread);
     _thread = Stack(tothread(-1));
@@ -48,7 +48,7 @@ Thread::Thread(const Stack& stack) : Value(stack), _thread(nullptr), _pusher(nul
     _pusher.reset(_thread.getInterface());
 }
 
-Thread::Thread(const Value& value) : Value(value), _thread(nullptr), _pusher(nullptr)
+Thread::Thread(const Value& value) : Value(value), _thread(NULL), _pusher(NULL)
 {
     pushRef(T_Thread);
     _thread = Stack(tothread(-1));

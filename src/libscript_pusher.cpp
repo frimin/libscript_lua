@@ -52,7 +52,7 @@ Pusher& Pusher::push(Value::P_Nil)   { pushnil(); ++_push_count; return *this; }
 Pusher& Pusher::push(Value value)    { sameThread(value); value.pushRefSafe(NoneMask); ++_push_count; return *this; }
 Pusher& Pusher::push(Class c)     
 {
-    auto info = (ClassInfo<VOID_T>*)newuserdata(sizeof(ClassInfo<VOID_T>));
+    ClassInfo<VOID_T>* info = (ClassInfo<VOID_T>*)newuserdata(sizeof(ClassInfo<VOID_T>));
 
     info->obj = (VOID_T*)c.c;
     info->ref = c.ref;

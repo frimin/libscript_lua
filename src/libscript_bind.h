@@ -36,7 +36,12 @@
 #define _H_LIBSCRIPT_BIND_H_
 
 #include "libscript_sys.h"
-#include "libscript_cd.h"
+
+#ifndef _CPP_98_
+#	include "libscript_cd.h"
+#else
+#	include "libscript_cd_cpp98.h"
+#endif
 
 /// @addtogroup script
 /// @{
@@ -54,6 +59,7 @@ Value getFunction(Stack& stack, _Func func)
 
 Value getForwardFunction(Stack& stack, CD::Function::Forward func);
 
+/// @brief Bind CPP Class
 template<typename _Class>
 class BindClass FINAL
 {
@@ -74,6 +80,8 @@ public:
         _metaTable.setfield(Stack::REGISTRYINDEX(), metaname.c_str());
     }
 
+#ifndef _CPP_98_
+
     template <typename ... _Args>
     BindClass& create(const char* name)
     {
@@ -89,6 +97,8 @@ public:
         _script.setglobal(name);
         return *this;
     }
+
+#endif
 
     BindClass& create_forward(const char* name, Creator creator)
     {
@@ -150,8 +160,8 @@ public:
     }
     
 private:
-    BindClass(const BindClass& copy) = delete;
-    BindClass& operator=(const BindClass& copy) = delete;
+    BindClass(const BindClass& copy) TODELETE;
+    BindClass& operator=(const BindClass& copy) TODELETE;
 
 private:
     Script& _script;
@@ -159,6 +169,7 @@ private:
     Pusher _pusher;
 };
 
+/// @brief Definition a Module
 class EXPORT Module FINAL
 {
 public:
@@ -183,8 +194,8 @@ public:
     }
 
 private:
-    Module(const Module& copy) = delete;
-    Module& operator=(const Module& copy) = delete;
+    Module(const Module& copy) TODELETE;
+    Module& operator=(const Module& copy) TODELETE;
 
 private:
     bool _badFlag;

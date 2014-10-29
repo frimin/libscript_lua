@@ -51,15 +51,15 @@ _NAME_BEGIN
 class EXPORT Script FINAL : public Stack
 {
 public:
-    Script(bool openlibs = true, MemAllocFunc alloc = nullptr, void* ud = nullptr);
+    Script(bool openlibs = true, MemAllocFunc alloc = NULL, void* ud = NULL);
     Script(bool openlibs, MemAllocation* alloc);
     ~Script();
 
     void exec(const std::string& fileName);
     void execString(const std::string& str);
     
-    bool execSafe(const std::string& fileName, std::string* errorOut = nullptr);
-    bool execStringSafe(const std::string& str, std::string* errorOut = nullptr);
+    bool execSafe(const std::string& fileName, std::string* errorOut = NULL);
+    bool execStringSafe(const std::string& str, std::string* errorOut = NULL);
 
     Value newFunction(const std::string& script);
     Value newFunction(CFunction function);
@@ -79,14 +79,14 @@ public:
     }
     
     /// @brief index value with given the key
-    /// @note When to index a nonexistent key, will be return a nil
+    /// If given index is a nonexistent key, will be return a nil
     Table operator[](long long key);
     Table operator[](Value& value);
     Table operator[](const char *key);
 
 private:
-    Script(const Script& copy) = delete;
-    Script& operator=(const Script& copy) = delete;
+    Script(const Script& copy) TODELETE;
+    Script& operator=(const Script& copy) TODELETE;
 };
 
 /// @}

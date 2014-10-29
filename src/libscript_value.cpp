@@ -59,12 +59,12 @@ struct DataSourcesDispatcher
     IValueDataSources* _dataSources;
 };
 
-StackValue::StackValue(RawInterface raw, int index, IValueDataSources* dataSource) : Stack(raw), _index(index), _dataSources(dataSource)
+StackValue::StackValue(RawInterface raw, int index, IValueDataSources* dataSources) : Stack(raw), _index(index), _dataSources(dataSources)
 {
 
 }
 
-StackValue::StackValue(const Stack& stack, int index, IValueDataSources* dataSource) : Stack(stack), _index(index), _dataSources(dataSource)
+StackValue::StackValue(const Stack& stack, int index, IValueDataSources* dataSources) : Stack(stack), _index(index), _dataSources(dataSources)
 {
 
 }
@@ -137,15 +137,15 @@ void* StackValue::_toClass(const char* metaname)
 {
     DataSourcesDispatcher dispatcher(_dataSources);
     checkudata_L(_index, metaname);
-    auto info = (ClassInfo<VOID_T>*)touserdata(_index);
-    return info->readonly ? nullptr : info->obj;
+    ClassInfo<VOID_T>* info = (ClassInfo<VOID_T>*)touserdata(_index);
+    return info->readonly ? NULL : info->obj;
 }
 
 void* StackValue::_toConstClass(const char* metaname)
 {
     DataSourcesDispatcher dispatcher(_dataSources);
     checkudata_L(_index, metaname);
-    auto info = (ClassInfo<VOID_T>*)touserdata(_index);
+    ClassInfo<VOID_T>* info = (ClassInfo<VOID_T>*)touserdata(_index);
     return info->obj;
 }
 
@@ -230,15 +230,16 @@ StackValue& StackValue::operator = (const StackValue& copy)
 
 // To prevent when copy Value to call many Lua APIs
 // (Call the luaL_ref and luaL_unref neet so many time)
-class ValueHandler
+struct ValueHandler
 {
-public:
-    int value = 0;
-    int refCount = 0;
+    int value;
+    int refCount;
+	
+	ValueHandler() : value(0), refCount(0) { }
 
     static ValueHandler* create(int value)
     {
-        ValueHandler* hander = nullptr;
+        ValueHandler* hander = NULL;
 
         if (_s_free_list.size())
         {
@@ -406,7 +407,7 @@ bool Value::operator != (Value& value)
 
 Value& Value::operator=(Value& copy)
 {
-    if (_c_state != nullptr)
+    if (_c_state != NULL)
         sameThread(copy);
     else
         _c_state = copy._c_state;
@@ -427,7 +428,7 @@ void Value::releaseHandler()
 
     ValueHandler::release(_handler);
 
-    _handler = nullptr;
+    _handler = NULL;
 }
 
 void Value::endOfHandlerRefBuffer()

@@ -6,42 +6,48 @@ SET(LIB_NAME libscript)
 ## FILES
 #########################################################################################
 
-SET(HEADER_LIST
+SET(SRC_LIST
     libscript.h
     libscript_sys.h
+    libscript_sys.cpp
     libscript_bind.h
+    libscript_bind.cpp
     libscript_function.h
+    libscript_function.cpp
     libscript_fwd.h
     libscript_args.h
+    libscript_args.cpp
     libscript_luaapi.h
     libscript_stack.h
-    libscript_stack.h
-    libscript_table.h
-    libscript_table_dump.h
-    libscript_thread.h
-    libscript_value.h
-    libscript_pusher.h
-    libscript_cd.h
-)
-
-SET(SOURCE_LIST
-    libscript_sys.cpp
-    libscript_bind.cpp
-    libscript_function.cpp
-    libscript_args.cpp
     libscript_stack.cpp
+    libscript_table.h
     libscript_table.cpp
+    libscript_table_dump.h
     libscript_table_dump.cpp
+    libscript_thread.h
     libscript_thread.cpp
+    libscript_value.h
     libscript_value.cpp
+    libscript_pusher.h
     libscript_pusher.cpp
-    libscript_cd.cpp
 )
 
-SOURCE_GROUP(${LIB_NAME} FILES ${HEADER_LIST})
-SOURCE_GROUP(${LIB_NAME} FILES ${SOURCE_LIST})
+IF(CPP_98)
+    SET(SRC_LIST
+        ${SRC_LIST} 
+        libscript_cd_cpp98.h
+    )
+ELSE()
+    SET(SRC_LIST
+        ${SRC_LIST}
+        libscript_cd.h
+        libscript_cd.cpp
+    )
+ENDIF()
 
-ADD_LIBRARY(${LIB_NAME} ${HEADER_LIST} ${SOURCE_LIST})
+SOURCE_GROUP(${LIB_NAME} FILES ${SRC_LIST})
+
+ADD_LIBRARY(${LIB_NAME} ${SRC_LIST})
 
 #########################################################################################
 ## INCLUDE & LINK

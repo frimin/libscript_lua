@@ -36,17 +36,17 @@
 
 _NAME_BEGIN
 
-Table::Table(const Stack& stack) : Value(stack), _pusher(nullptr)
+Table::Table(const Stack& stack) : Value(stack), _pusher(NULL)
 {
     _pusher.reset(getInterface());
 }
 
-Table::Table(const Value& value) : Value(value), _pusher(nullptr)
+Table::Table(const Value& value) : Value(value), _pusher(NULL)
 {
     _pusher.reset(getInterface());
 }
 
-Table::Table(const Table& copy) : Value(copy), _pusher(nullptr)
+Table::Table(const Table& copy) : Value(copy), _pusher(NULL)
 {
     _pusher.reset(getInterface());
 }

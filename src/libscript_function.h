@@ -52,6 +52,8 @@ public:
     Function(const Function& copy);
     ~Function();
     
+#ifndef _CPP_98_
+
     /// @brief Call this function and given arguments
     template<typename ... _Args>
     Function& call(_Args ... arg)
@@ -70,6 +72,8 @@ public:
         return *this;
     }
 
+#endif
+
     /// @brief Get the number of last results
     int resultCount() const { return _pusher.count(); }
 
@@ -82,6 +86,9 @@ public:
     Value& operator[](int i);
 
 private:
+
+#ifndef _CPP_98_
+
     template<typename _Tuple, std::size_t _ArgN>
     class _ArgPusher {
     public:
@@ -97,6 +104,8 @@ private:
     public:
         static void push(Pusher& pusher, _Tuple& tuple) { }
     };
+
+#endif
 
     void argReset() { _pusher.reset(); _beform_stack_size = gettop(); }
 

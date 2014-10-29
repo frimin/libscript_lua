@@ -51,15 +51,12 @@ struct IValueDataSources
     virtual void popData() = 0;
 };
 
-/// @brief Represents a value from stack
+/// @brief Represent a value from stack
 class EXPORT StackValue : public Stack
 {
 public:
-    /// @brief Initialization from RawInterface and given index
-    StackValue(RawInterface raw, int index, IValueDataSources* dataSource = NULL);
-    /// @brief Initialization from other stack and given index
-    StackValue(const Stack& stack, int index, IValueDataSources* dataSource = NULL);
-    /// @brief Copy other
+    StackValue(RawInterface raw, int index, IValueDataSources* dataSources = NULL);
+    StackValue(const Stack& stack, int index, IValueDataSources* dataSources = NULL);
     StackValue(const StackValue& stackvalue);
 
     /// @brief Returns the name of the type of the value.
@@ -186,9 +183,12 @@ private:
     IValueDataSources* _dataSources;
 };
 
-/// @brief Represents a value from registry
+struct ValueHandler;
+
+/// @brief Represent a value from registry
 class EXPORT Value : public StackValue, private IValueDataSources
 {
+    friend class Script;
 public:
     /// @brief Initialization from RawInterface
     Value(RawInterface raw);
@@ -206,10 +206,10 @@ public:
     /// Returns true if the value is given type, and false otherwise.
     bool pushRefSafe(TYPE check);
 
-    /// @brief Set new value from stack top, and pop top.
+    /// @brief Set new value from stack top, then pop top.
     /// If stack is empty, Will to push a nil then to reset
     void reset();
-    /// @brief Set new value from given stack top, and pop top.
+    /// @brief Set new value from given stack top, then pop top.
     /// If stack is empty, Will to push a nil then to reset
     /// You can change current value's stack
     void reset(Stack& stack);

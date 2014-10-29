@@ -63,8 +63,8 @@ public:
         StackValue& value();
 
     private:
-        Accessor(const Accessor& copy) = delete;
-        Accessor& operator=(const Accessor& copy) = delete;
+        Accessor(const Accessor& copy) TODELETE;
+        Accessor& operator=(const Accessor& copy) TODELETE;
 
     private:
         bool _valid;

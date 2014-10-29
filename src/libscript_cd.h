@@ -173,6 +173,7 @@ public:
     }
 
 private:
+
     template <typename ... _Args>
     static int dispatcher(RawInterface raw)
     {
@@ -213,7 +214,7 @@ private:
 
     static int setupMetaTable(Stack& stack, _Class* obj)
     {
-        if (obj == nullptr)
+        if (obj == NULL)
            return stack.error_L("Bad initialization");;
 
         std::string metaname(typeid(_Class).name());
@@ -254,6 +255,7 @@ public:
     }
 
 private:
+
     template<typename _Method>
     static int dispatcher(RawInterface raw)
     {
@@ -369,6 +371,7 @@ private:
 
         return pusher.count();
     }
+
 };
 
 template<typename _Class>
@@ -404,7 +407,7 @@ public:
         if (info->obj)
         {
             delete info->obj;
-            info->obj = nullptr;
+            info->obj = NULL;
         }
 
         return 0;
@@ -428,7 +431,7 @@ public:
         if (info->obj)
         {
             w->value(info->obj);
-            info->obj = nullptr;
+            info->obj = NULL;
         }
 
         return 0;

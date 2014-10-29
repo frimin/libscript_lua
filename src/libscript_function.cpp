@@ -38,17 +38,17 @@
 
 _NAME_BEGIN
 
-Function::Function(const Stack& stack) : Value(stack), _pusher(nullptr), _nil(nullptr)
+Function::Function(const Stack& stack) : Value(stack), _pusher(NULL), _nil(NULL)
 {
     _pusher.reset(getInterface());
 }
 
-Function::Function(const Value& value) : Value(value), _pusher(nullptr), _nil(nullptr)
+Function::Function(const Value& value) : Value(value), _pusher(NULL), _nil(NULL)
 {
     _pusher.reset(getInterface());
 }
 
-Function::Function(const Function& copy) : Value(copy), _pusher(nullptr), _nil(nullptr)
+Function::Function(const Function& copy) : Value(copy), _pusher(NULL), _nil(NULL)
 {
     _pusher.reset(getInterface());
 }
