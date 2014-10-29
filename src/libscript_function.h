@@ -81,8 +81,6 @@ public:
 	Function& call(_Arg1 arg1, _Arg2 arg2) { return operator()(arg1, arg2); }
 	template<typename _Arg1, typename _Arg2, typename _Arg3>
 	Function& call(_Arg1 arg1, _Arg2 arg2, _Arg3 arg3) { return operator()(arg1, arg2, arg3); }
-    template<typename _Arg1, typename _Arg2, typename _Arg3>
-    Function& call(_Arg1 arg1, _Arg2 arg2, _Arg3 arg3) { return operator()(arg1, arg2, arg3); }
     template<typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4>
     Function& call(_Arg1 arg1, _Arg2 arg2, _Arg3 arg3, _Arg4 arg4) { return operator()(arg1, arg2, arg3, arg4); }
     template<typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4, typename _Arg5>
