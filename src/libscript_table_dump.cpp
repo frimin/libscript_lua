@@ -254,7 +254,7 @@ bool TableStringDumper::dump(const std::string& tableName, std::ostream& o)
 
 bool TableStringDumper::dump(const std::string& tableName, const std::string& fileName)
 {
-    std::ofstream file(fileName);
+	std::ofstream file(fileName.c_str());
 
     if (!file.is_open())
         return false;

@@ -48,6 +48,187 @@ _NAME_BEGIN
 
 namespace CD
 {
+    class Function
+    {
+    public:
+        typedef int(*Forward)(Args& args, Pusher& pusher);
+
+        static void pushForward(Stack& stack, Function::Forward func)
+        {
+            Wrapper<Function::Forward>* w = (Wrapper<Function::Forward>*)stack.newuserdata(sizeof(Wrapper<Function::Forward>));
+            w->value = func;
+            stack.pushcclosure(Function::forwardDispatcher, 1);
+        }
+
+    private:
+        static int forwardDispatcher(RawInterface raw)
+        {
+            Args args(raw);
+
+            Wrapper<Function::Forward>* w = (Wrapper<Function::Forward>*)args.touserdata(Stack::upvalueindex(1));
+
+            Pusher pusher(raw);
+
+            return w->value(args, pusher);
+        }
+    };
+
+    template<typename _Class>
+    class Constructor
+    {
+    public:
+        typedef _Class*(*Forward)(Args& args);
+
+        static void pushForward(Stack& stack, typename Constructor<_Class>::Forward method)
+        {
+            Wrapper<Constructor<_Class>::Forward>* w =
+                (Wrapper<Constructor<_Class>::Forward>*)stack.newuserdata(sizeof(Wrapper<Constructor<_Class>::Forward>));
+            w->value = method;
+            stack.pushcclosure(CD::Constructor<_Class>::forwardDispatcher, 1);
+        }
+
+    private:
+
+        static int forwardDispatcher(RawInterface raw)
+        {
+            Args args(raw);
+
+            Wrapper<Constructor<_Class>::Forward>* w = 
+				(Wrapper<Constructor<_Class>::Forward>*)args.touserdata(Stack::upvalueindex(1));
+
+            return setupMetaTable(args, w->value(args));
+        }
+
+        static int setupMetaTable(Stack& stack, _Class* obj)
+        {
+            if (obj == NULL)
+                return stack.error_L("Bad initialization");;
+
+            std::string metaname(typeid(_Class).name());
+
+            ClassInfo<_Class>* info = (ClassInfo<_Class>*)stack.newuserdata(sizeof(ClassInfo<_Class>));
+
+            info->obj = obj;
+            info->ref = false;
+            info->readonly = false;
+
+            stack.getfield(Stack::REGISTRYINDEX(), metaname.c_str());
+            stack.setmetatable(-2);
+
+            return 1;
+        }
+    };
+
+    template<typename _Class>
+    class Method
+    {
+    public:
+        typedef int(*Forward)(_Class* _this, Args& args, Pusher& pusher);
+
+        static void pushForward(Stack& stack, typename Method<_Class>::Forward method)
+        {
+            Wrapper<Method<_Class>::Forward>* w =
+                (Wrapper<Method<_Class>::Forward>*)stack.newuserdata(sizeof(Wrapper<Method<_Class>::Forward>));
+            w->value = method;
+            stack.pushcclosure(Method<_Class>::forwardDispatcher, 1);
+        }
+
+    private:
+
+        static int forwardDispatcher(RawInterface raw)
+        {
+            Args args(raw);
+
+            if (!args[1].isUserdata())
+            {
+                return args.error_L("Bad arg");
+            }
+
+            auto info = (ClassInfo<_Class>*)args.touserdata(1);
+
+            auto w = (Wrapper<Method<_Class>::Forward>*)args.touserdata(Stack::upvalueindex(1));
+
+            if (info->readonly)
+            {
+                bool readonlyMethod = args.tointeger(Stack::upvalueindex(2)) == 1;
+                if (readonlyMethod == false)
+                {
+                    return args.error_L("Try to call readonly class's usually method");
+                }
+            }
+
+            Pusher pusher(raw);
+
+            _Class* _this = args[1].toClass<_Class>();;
+
+            return w->value(_this, args, pusher);
+        }
+    };
+
+    template<typename _Class>
+    class Destructor
+    {
+    public:
+        static void push(Stack& stack)
+        {
+            stack.pushcfunction(Destructor<_Class>::dispatcher);
+        }
+
+        static void push(Stack& stack, void (userDispatcher)(_Class*))
+        {
+            Wrapper<void(*)(_Class*)>* w =
+                (Wrapper<void(*)(_Class*)>*)stack.newuserdata(sizeof(Wrapper<void(*)(_Class*)>));
+            w->value = userDispatcher;
+            stack.pushcclosure(Destructor<_Class>::userDispatcher, 1);
+        }
+
+        static int dispatcher(RawInterface raw)
+        {
+            Args args(raw);
+            ArgsIterator argIter(args,
+                ArgsIterator::getConstructorSequence() != ARGS_EVALUATE::RIGHT_TO_LEFT, 0);
+
+            Stack stack(raw);
+
+            ClassInfo<_Class>* info = (ClassInfo<_Class>*)stack.touserdata(1);
+
+            if (info->ref)
+                return 0;
+
+            if (info->obj)
+            {
+                delete info->obj;
+                info->obj = NULL;
+            }
+
+            return 0;
+        }
+
+        typedef void(*Destroyer)(_Class*);
+
+        static int userDispatcher(RawInterface raw)
+        {
+            Stack stack(raw);
+
+            assert(stack.gettop() == 1);
+
+            Wrapper<Destroyer>* w = (Wrapper<Destroyer>*)stack.touserdata(Stack::upvalueindex(1));
+
+            ClassInfo<_Class>* info = (ClassInfo<_Class>*)stack.touserdata(1);
+
+            if (info->ref)
+                return 0;
+
+            if (info->obj)
+            {
+                w->value(info->obj);
+                info->obj = NULL;
+            }
+
+            return 0;
+        }
+    };
+
 }
 
 /// @}

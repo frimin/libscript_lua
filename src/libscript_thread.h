@@ -77,6 +77,49 @@ public:
         return _resume();
     }
 
+#else
+
+    THREADSTATUS resume()
+    {
+        resultReset();
+        return _resume();
+    }
+
+	template<typename _Arg1> THREADSTATUS resume(_Arg1 arg1)
+    {
+        resultReset();
+        _pusher.push(arg1);
+        return _resume();
+    }
+
+	template<typename _Arg1, typename _Arg2> THREADSTATUS resume(_Arg1 arg1, _Arg2 arg2)
+    {
+        resultReset();
+        _pusher.push(arg1);
+		_pusher.push(arg2);
+        return _resume();
+    }
+
+	template<typename _Arg1, typename _Arg2, typename _Arg3> THREADSTATUS resume(_Arg1 arg1, _Arg2 arg2, _Arg3 arg3)
+    {
+        resultReset();
+        _pusher.push(arg1);
+		_pusher.push(arg2);
+		_pusher.push(arg3);
+        return _resume();
+    }
+
+    template<typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4, typename _Arg5> THREADSTATUS resume(_Arg1 arg1, _Arg2 arg2, _Arg3 arg3, _Arg4 arg4, _Arg5 arg5)
+    {
+        resultReset();
+        _pusher.push(arg1);
+        _pusher.push(arg2);
+        _pusher.push(arg3);
+        _pusher.push(arg4);
+        _pusher.push(arg5);
+        return _resume();
+    }
+
 #endif
 
     /// @brief Get the number of last results

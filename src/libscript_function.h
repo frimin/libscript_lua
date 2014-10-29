@@ -72,6 +72,85 @@ public:
         return *this;
     }
 
+#else
+	
+    Function& call() { return operator()(); }
+	template<typename _Arg1>
+	Function& call(_Arg1 arg1) { return operator()(arg1); }
+	template<typename _Arg1, typename _Arg2>
+	Function& call(_Arg1 arg1, _Arg2 arg2) { return operator()(arg1, arg2); }
+	template<typename _Arg1, typename _Arg2, typename _Arg3>
+	Function& call(_Arg1 arg1, _Arg2 arg2, _Arg3 arg3) { return operator()(arg1, arg2, arg3); }
+    template<typename _Arg1, typename _Arg2, typename _Arg3>
+    Function& call(_Arg1 arg1, _Arg2 arg2, _Arg3 arg3) { return operator()(arg1, arg2, arg3); }
+    template<typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4>
+    Function& call(_Arg1 arg1, _Arg2 arg2, _Arg3 arg3, _Arg4 arg4) { return operator()(arg1, arg2, arg3, arg4); }
+    template<typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4, typename _Arg5>
+    Function& call(_Arg1 arg1, _Arg2 arg2, _Arg3 arg3, _Arg4 arg4, _Arg5 arg5) { return operator()(arg1, arg2, arg3, arg4, arg5); }
+
+    Function& operator()()
+    {
+        argReset();
+        pushRef(T_Function);
+        raw_call();
+        return *this;
+    }
+
+	template<typename _Arg1> Function& operator()(_Arg1 arg1)
+    {
+        argReset();
+        pushRef(T_Function);
+        _pusher.push(arg1);
+        raw_call();
+        return *this;
+    }
+
+	template<typename _Arg1, typename _Arg2> Function& operator()(_Arg1 arg1, _Arg2 arg2)
+    {
+        argReset();
+        pushRef(T_Function);
+        _pusher.push(arg1);
+		_pusher.push(arg2);
+        raw_call();
+        return *this;
+    }
+
+	template<typename _Arg1, typename _Arg2, typename _Arg3> Function& operator()(_Arg1 arg1, _Arg2 arg2, _Arg3 arg3)
+    {
+        argReset();
+        pushRef(T_Function);
+        _pusher.push(arg1);
+		_pusher.push(arg2);
+		_pusher.push(arg3);
+        raw_call();
+        return *this;
+	}
+
+    template<typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4> Function& operator()(_Arg1 arg1, _Arg2 arg2, _Arg3 arg3, _Arg4 arg4)
+    {
+        argReset();
+        pushRef(T_Function);
+        _pusher.push(arg1);
+        _pusher.push(arg2);
+        _pusher.push(arg3);
+        _pusher.push(arg4);
+        raw_call();
+        return *this;
+    }
+
+    template<typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4, typename _Arg5> Function& operator()(_Arg1 arg1, _Arg2 arg2, _Arg3 arg3, _Arg4 arg4, _Arg5 arg5)
+    {
+        argReset();
+        pushRef(T_Function);
+        _pusher.push(arg1);
+        _pusher.push(arg2);
+        _pusher.push(arg3);
+        _pusher.push(arg4);
+        _pusher.push(arg5);
+        raw_call();
+        return *this;
+    }
+
 #endif
 
     /// @brief Get the number of last results

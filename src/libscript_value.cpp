@@ -45,7 +45,7 @@ _NAME_BEGIN
 
 struct DataSourcesDispatcher
 {
-    DataSourcesDispatcher(IValueDataSources* dataSources)
+    DataSourcesDispatcher(IValueDataSources* dataSources) : _dataSources(dataSources)
     {
         if (_dataSources)
             _dataSources->pushData();

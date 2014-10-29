@@ -4,21 +4,23 @@ int main()
 {
     Script script;
 
-    std::string code = R"(
-        function userthread(n)
-            for i=1, 10 do
-                n = coroutine.yield(i + n)
-            end
-        end
-    )";
+    std::string code = "\
+        function userthread(n)\
+            for i=1, 10 do\
+                n = coroutine.yield(i + n)\
+            end\
+        end\
+    ";
 
     script.execString(code);
 
     Thread thread = script.newThread(script["userthread"]);
 
+    thread.type();
+
     int n = 0;
 
-    auto state = Stack::STATUS_YIELD;
+	Stack::THREADSTATUS state = Stack::STATUS_YIELD;
 
     while (state == Stack::STATUS_YIELD)
     {
