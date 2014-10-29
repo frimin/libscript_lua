@@ -159,6 +159,7 @@ public:
     /// @brief Returns true if the value is a userdata (either full or light), and false otherwise.
     bool isUserdata();
 
+    /// --- Converts to base types --- 
     operator bool()         { return toBoolean(); }
     operator int()          { return toInteger(); }
     operator long()         { return toInteger(); }
@@ -168,7 +169,9 @@ public:
     operator void*()        { return toUserdata(); }
     operator const char*()  { return toString(); }
 
+    /// @brief Set stack index
     void setIndex(int index){ _index = index; }
+    /// @brief Returns stack index
     int getIndex() const    { return _index; }
 
     StackValue& operator = (const StackValue& copy);
@@ -183,26 +186,32 @@ private:
     IValueDataSources* _dataSources;
 };
 
+/// @brief Represents a value from registry
 class EXPORT Value : public StackValue, private IValueDataSources
 {
-    friend class Script;
 public:
+    /// @brief Initialization from RawInterface
     Value(RawInterface raw);
+    /// @brief Initialization from other stack
     Value(const Stack& stack);
+    /// @brief Copy other
     Value(const Value& copy);
     virtual ~Value();
 
-    /// @brief Push value in stack and check type
-    /// @warning May be thow a exception
+    /// @brief Push value to stack and check type
+    /// @warning Its may be thow a exception
     void pushRef(TYPE check);
 
-    /// @brief Push value in stack and check type
-    /// @return The value is or not given type
+    /// @brief Push value to stack and check type
+    /// Returns true if the value is given type, and false otherwise.
     bool pushRefSafe(TYPE check);
 
-    /// @brief Set stack top to new value, and pop stack top
-    /// @note If stack is empty, Will to push a nil then to reset
+    /// @brief Set new value from stack top, and pop top.
+    /// If stack is empty, Will to push a nil then to reset
     void reset();
+    /// @brief Set new value from given stack top, and pop top.
+    /// If stack is empty, Will to push a nil then to reset
+    /// You can change current value's stack
     void reset(Stack& stack);
 
     bool operator ==(Value& value);
