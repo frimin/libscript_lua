@@ -155,15 +155,6 @@ public:
         stack.pushcfunction(Constructor<_Class>::dispatcher<_Args ...>);
     }
 
-    template <typename _Creator>
-    static void push(Stack& stack, _Creator creator)
-    {
-        auto w =
-            (Wrapper<_Creator>*)stack.newuserdata(sizeof(Wrapper<_Creator>));
-        w->value = creator;
-        stack.pushcclosure(CD::Constructor<_Class>::userDispatcher<_Creator>, 1);
-    }
-
     static void pushForward(Stack& stack, typename Constructor<_Class>::Forward method)
     {
         auto w =
@@ -181,20 +172,6 @@ private:
         ArgsIterator argIter(args,
             ArgsIterator::getConstructorSequence() != ARGS_EVALUATE::RIGHT_TO_LEFT, 0);
         return setupMetaTable(args, new _Class(static_cast<_Args>(argIter.GetAndToNext())...));
-    }
-
-    template <typename _Creator>
-    static int userDispatcher(RawInterface raw)
-    {
-        Stack stack(raw);
-
-        auto w = (Wrapper<_Creator>*)stack.touserdata(Stack::upvalueindex(1));
-
-        Args args(raw);
-        ArgsIterator argIter(args,
-            ArgsIterator::getConstructorSequence() != ARGS_EVALUATE::RIGHT_TO_LEFT, 0);
-
-        return setupMetaTable(argIter, Constructor<_Class>::caller(argIter, w->value));
     }
 
     static int forwardDispatcher(RawInterface raw)

@@ -52,7 +52,15 @@ namespace CD
     {
     public:
         typedef int(*Forward)(Args& args, Pusher& pusher);
-
+        
+        template <typename _Func>
+        static void push(Stack& stack, _Func func)
+        {
+            auto *w = (Wrapper<_Func> *)stack.newuserdata(sizeof(Wrapper<_Func>));
+            w->value = func;
+            stack.pushcclosure(Function::dispatcher<_Func>, 1);
+        }
+        
         static void pushForward(Stack& stack, Function::Forward func)
         {
             Wrapper<Function::Forward>* w = (Wrapper<Function::Forward>*)stack.newuserdata(sizeof(Wrapper<Function::Forward>));
@@ -61,6 +69,17 @@ namespace CD
         }
 
     private:
+        
+        template <typename _Func>
+        static int dispatcher(RawInterface raw)
+        {
+            Stack stack(raw);
+            
+            Wrapper<_Func>* w = (Wrapper<_Func>*)stack.touserdata(Stack::upvalueindex(1));
+            
+            return Function::caller(stack, w->value);
+        }
+        
         static int forwardDispatcher(RawInterface raw)
         {
             Args args(raw);
@@ -71,6 +90,37 @@ namespace CD
 
             return w->value(args, pusher);
         }
+        
+        template <typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4, typename _Arg5>
+        static int caller(Stack& stack, void(*func)(_Arg1, _Arg2, _Arg3, _Arg4, _Arg5))
+        {
+            Args args(stack.getInterface());
+
+            func(static_cast<_Arg1>(args[1]),
+                 static_cast<_Arg2>(args[2]),
+                 static_cast<_Arg3>(args[3]),
+                 static_cast<_Arg4>(args[4]),
+                 static_cast<_Arg5>(args[5]));
+            
+            return 0;
+        }
+        
+        template <typename _Rt, typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4, typename _Arg5>
+        static int caller(Stack& stack, _Rt(*func)(_Arg1, _Arg2, _Arg3, _Arg4, _Arg5))
+        {
+            Args args(stack.getInterface());
+            
+            _Rt rt = func(
+                 static_cast<_Arg1>(args[1]),
+                 static_cast<_Arg2>(args[2]),
+                 static_cast<_Arg3>(args[3]),
+                 static_cast<_Arg4>(args[4]),
+                 static_cast<_Arg5>(args[5]));
+            
+            Pusher pusher(stack.getInterface());
+            pusher.push(rt);
+            return pusher.count();
+        }
     };
 
     template<typename _Class>
@@ -78,7 +128,42 @@ namespace CD
     {
     public:
         typedef _Class*(*Forward)(Args& args);
-
+        
+        static void push()
+        {
+            stack.pushcfunction(Constructor<_Class>::dispatcher);
+        }
+        
+        template <typename _Arg1>
+        static void push(Stack& stack)
+        {
+            stack.pushcfunction(Constructor<_Class>::dispatcher<_Arg1>);
+        }
+        
+        template <typename _Arg1, typename _Arg2>
+        static void push(Stack& stack)
+        {
+            stack.pushcfunction(Constructor<_Class>::dispatcher<_Arg1, _Arg2>);
+        }
+        
+        template <typename _Arg1, typename _Arg2, typename _Arg3>
+        static void push(Stack& stack)
+        {
+            stack.pushcfunction(Constructor<_Class>::dispatcher<_Arg1, _Arg2, _Arg3>);
+        }
+        
+        template <typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4>
+        static void push(Stack& stack)
+        {
+            stack.pushcfunction(Constructor<_Class>::dispatcher<_Arg1, _Arg2, _Arg3, _Arg4>);
+        }
+        
+        template <typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4, typename _Arg5>
+        static void push(Stack& stack)
+        {
+            stack.pushcfunction(Constructor<_Class>::dispatcher<_Arg1, _Arg2, _Arg3, _Arg4, _Arg5>);
+        }
+        
         static void pushForward(Stack& stack, typename Constructor<_Class>::Forward method)
         {
             Wrapper<Constructor<_Class>::Forward>* w =
@@ -88,7 +173,58 @@ namespace CD
         }
 
     private:
-
+        
+        static int dispatcher(RawInterface raw)
+        {
+            Args args(raw);
+            return setupMetaTable(args, new _Class());
+        }
+        
+        template <typename _Arg1>
+        static int dispatcher(RawInterface raw)
+        {
+            Args args(raw);
+            return setupMetaTable(args, new _Class(static_cast<_Arg1>(args[1])));
+        }
+        
+        template <typename _Arg1, typename _Arg2>
+        static int dispatcher(RawInterface raw)
+        {
+            Args args(raw);
+            return setupMetaTable(args, new _Class(static_cast<_Arg1>(args[1]),
+                                                   static_cast<_Arg2>(args[2])));
+        }
+        
+        template <typename _Arg1, typename _Arg2, typename _Arg3>
+        static int dispatcher(RawInterface raw)
+        {
+            Args args(raw);
+            return setupMetaTable(args, new _Class(static_cast<_Arg1>(args[1]),
+                                                   static_cast<_Arg2>(args[2]),
+                                                   static_cast<_Arg3>(args[3])));
+        }
+        
+        template <typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4>
+        static int dispatcher(RawInterface raw)
+        {
+            Args args(raw);
+            return setupMetaTable(args, new _Class(static_cast<_Arg1>(args[1]),
+                                                   static_cast<_Arg2>(args[2]),
+                                                   static_cast<_Arg3>(args[3]),
+                                                   static_cast<_Arg4>(args[4])));
+        }
+        
+        template <typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4, typename _Arg5>
+        static int dispatcher(RawInterface raw)
+        {
+            Args args(raw);
+            return setupMetaTable(args, new _Class(static_cast<_Arg1>(args[1]),
+                                                   static_cast<_Arg2>(args[2]),
+                                                   static_cast<_Arg3>(args[3]),
+                                                   static_cast<_Arg4>(args[4]),
+                                                   static_cast<_Arg5>(args[5])));
+        }
+        
         static int forwardDispatcher(RawInterface raw)
         {
             Args args(raw);

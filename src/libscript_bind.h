@@ -90,14 +90,50 @@ public:
         return *this;
     }
 
-    template <typename _Creator>
-    BindClass& create(const char* name, _Creator creator)
+#else
+    
+    BindClass& create(const char* name)
     {
-        CD::Constructor<_Class>::push(_script, creator);
+        CD::Constructor<_Class>::template push(_script);
         _script.setglobal(name);
         return *this;
     }
-
+    
+    template <typename _Arg1> BindClass& create(const char* name)
+    {
+        CD::Constructor<_Class>::template push<_Arg1>(_script);
+        _script.setglobal(name);
+        return *this;
+    }
+    
+    template <typename _Arg1, typename _Arg2> BindClass& create(const char* name)
+    {
+        CD::Constructor<_Class>::template push<_Arg1, _Arg2>(_script);
+        _script.setglobal(name);
+        return *this;
+    }
+    
+    template <typename _Arg1, typename _Arg2, typename _Arg3> BindClass& create(const char* name)
+    {
+        CD::Constructor<_Class>::template push<_Arg1, _Arg2, _Arg3>(_script);
+        _script.setglobal(name);
+        return *this;
+    }
+    
+    template <typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4> BindClass& create(const char* name)
+    {
+        CD::Constructor<_Class>::template push<_Arg1, _Arg2, _Arg3, _Arg4>(_script);
+        _script.setglobal(name);
+        return *this;
+    }
+    
+    template <typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4, typename _Arg5> BindClass& create(const char* name)
+    {
+        CD::Constructor<_Class>::template push<_Arg1, _Arg2, _Arg3, _Arg4, _Arg5>(_script);
+        _script.setglobal(name);
+        return *this;
+    }
+    
 #endif
 
     BindClass& create_forward(const char* name, Creator creator)
