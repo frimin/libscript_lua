@@ -21,12 +21,6 @@ SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windo
 SET(CMAKE_RELWITHDEBINFO_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
 SET(CMAKE_MINSIZEREL_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
 
-OPTION(CPP_98 "Use C++98 standard" OFF)
-
-IF(CPP_98)
-    ADD_DEFINITIONS(-D _CPP_98_)
-ENDIF()
-
 #########################################################################################
 ## COMPILER OPTIONS
 #########################################################################################

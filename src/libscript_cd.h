@@ -214,13 +214,15 @@ class Method
 {
 public:
     typedef int(*Forward)(_Class* _this, Args& args, Pusher& pusher);
+    typedef int(*Forward_Const)(const _Class* _this, Args& args, Pusher& pusher);
 
     template<typename _Method>
     static void push(Stack& stack, _Method method)
     {
         Wrapper<_Method>* w = (Wrapper<_Method>*)stack.newuserdata(sizeof(Wrapper<_Method>));
         w->value = method;
-        stack.pushcclosure(Method<_Class>::dispatcher<_Method>, 1);
+        stack.pushboolean(false);
+        stack.pushcclosure(Method<_Class>::dispatcher<_Method>, 2);
     }
 
     static void pushForward(Stack& stack, typename Method<_Class>::Forward method)
@@ -228,6 +230,16 @@ public:
         Wrapper<Method<_Class>::Forward>* w =
             (Wrapper<Method<_Class>::Forward>*)stack.newuserdata(sizeof(Wrapper<Method<_Class>::Forward>));
         w->value = method;
+        stack.pushboolean(false);
+        stack.pushcclosure(Method<_Class>::forwardDispatcher, 1);
+    }
+
+    static void pushForward_Const(Stack& stack, typename Method<_Class>::Forward_Const method)
+    {
+        Wrapper<Method<_Class>::Forward>* w =
+            (Wrapper<Method<_Class>::Forward>*)stack.newuserdata(sizeof(Wrapper<Method<_Class>::Forward>));
+        w->value = method;
+        stack.pushboolean(true);
         stack.pushcclosure(Method<_Class>::forwardDispatcher, 1);
     }
 

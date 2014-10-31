@@ -91,6 +91,61 @@ namespace CD
             return w->value(args, pusher);
         }
         
+        static int caller(Stack& stack, void(*func)())
+        {
+            Args args(stack.getInterface());
+
+            func();
+
+            return 0;
+        }
+
+        template <typename _Arg1>
+        static int caller(Stack& stack, void(*func)(_Arg1))
+        {
+            Args args(stack.getInterface());
+
+            func(static_cast<_Arg1>(args[1]));
+
+            return 0;
+        }
+
+        template <typename _Arg1, typename _Arg2>
+        static int caller(Stack& stack, void(*func)(_Arg1, _Arg2))
+        {
+            Args args(stack.getInterface());
+
+            func(static_cast<_Arg1>(args[1]),
+                static_cast<_Arg2>(args[2]));
+
+            return 0;
+        }
+
+        template <typename _Arg1, typename _Arg2, typename _Arg3>
+        static int caller(Stack& stack, void(*func)(_Arg1, _Arg2, _Arg3))
+        {
+            Args args(stack.getInterface());
+
+            func(static_cast<_Arg1>(args[1]),
+                static_cast<_Arg2>(args[2]),
+                static_cast<_Arg3>(args[3]));
+
+            return 0;
+        }
+
+        template <typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4>
+        static int caller(Stack& stack, void(*func)(_Arg1, _Arg2, _Arg3, _Arg4))
+        {
+            Args args(stack.getInterface());
+
+            func(static_cast<_Arg1>(args[1]),
+                static_cast<_Arg2>(args[2]),
+                static_cast<_Arg3>(args[3]),
+                static_cast<_Arg4>(args[4]));
+
+            return 0;
+        }
+
         template <typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4, typename _Arg5>
         static int caller(Stack& stack, void(*func)(_Arg1, _Arg2, _Arg3, _Arg4, _Arg5))
         {
@@ -105,6 +160,76 @@ namespace CD
             return 0;
         }
         
+        template <typename _Rt>
+        static int caller(Stack& stack, _Rt(*func)())
+        {
+            Args args(stack.getInterface());
+
+            _Rt rt = func();
+
+            Pusher pusher(stack.getInterface());
+            pusher.push(rt);
+            return pusher.count();
+        }
+
+        template <typename _Rt, typename _Arg1>
+        static int caller(Stack& stack, _Rt(*func)(_Arg1))
+        {
+            Args args(stack.getInterface());
+
+            _Rt rt = func(
+                static_cast<_Arg1>(args[1]));
+
+            Pusher pusher(stack.getInterface());
+            pusher.push(rt);
+            return pusher.count();
+        }
+
+        template <typename _Rt, typename _Arg1, typename _Arg2>
+        static int caller(Stack& stack, _Rt(*func)(_Arg1, _Arg2))
+        {
+            Args args(stack.getInterface());
+
+            _Rt rt = func(
+                static_cast<_Arg1>(args[1]),
+                static_cast<_Arg2>(args[2]));
+
+            Pusher pusher(stack.getInterface());
+            pusher.push(rt);
+            return pusher.count();
+        }
+
+        template <typename _Rt, typename _Arg1, typename _Arg2, typename _Arg3>
+        static int caller(Stack& stack, _Rt(*func)(_Arg1, _Arg2, _Arg3))
+        {
+            Args args(stack.getInterface());
+
+            _Rt rt = func(
+                static_cast<_Arg1>(args[1]),
+                static_cast<_Arg2>(args[2]),
+                static_cast<_Arg3>(args[3]));
+
+            Pusher pusher(stack.getInterface());
+            pusher.push(rt);
+            return pusher.count();
+        }
+
+        template <typename _Rt, typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4>
+        static int caller(Stack& stack, _Rt(*func)(_Arg1, _Arg2, _Arg3, _Arg4))
+        {
+            Args args(stack.getInterface());
+
+            _Rt rt = func(
+                static_cast<_Arg1>(args[1]),
+                static_cast<_Arg2>(args[2]),
+                static_cast<_Arg3>(args[3]),
+                static_cast<_Arg4>(args[4]));
+
+            Pusher pusher(stack.getInterface());
+            pusher.push(rt);
+            return pusher.count();
+        }
+
         template <typename _Rt, typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4, typename _Arg5>
         static int caller(Stack& stack, _Rt(*func)(_Arg1, _Arg2, _Arg3, _Arg4, _Arg5))
         {

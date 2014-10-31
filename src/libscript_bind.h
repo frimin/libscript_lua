@@ -36,12 +36,8 @@
 #define _H_LIBSCRIPT_BIND_H_
 
 #include "libscript_sys.h"
+#include "libscript_cd.h"
 
-#ifndef _CPP_98_
-#	include "libscript_cd.h"
-#else
-#	include "libscript_cd_cpp98.h"
-#endif
 
 /// @addtogroup script
 /// @{
@@ -79,9 +75,6 @@ public:
         _metaTable.pushRefSafe(Stack::NoneMask);
         _metaTable.setfield(Stack::REGISTRYINDEX(), metaname.c_str());
     }
-
-#ifndef _CPP_98_
-
     template <typename ... _Args>
     BindClass& create(const char* name)
     {
@@ -89,52 +82,6 @@ public:
         _script.setglobal(name);
         return *this;
     }
-
-#else
-    
-    BindClass& create(const char* name)
-    {
-        CD::Constructor<_Class>::template push(_script);
-        _script.setglobal(name);
-        return *this;
-    }
-    
-    template <typename _Arg1> BindClass& create(const char* name)
-    {
-        CD::Constructor<_Class>::template push<_Arg1>(_script);
-        _script.setglobal(name);
-        return *this;
-    }
-    
-    template <typename _Arg1, typename _Arg2> BindClass& create(const char* name)
-    {
-        CD::Constructor<_Class>::template push<_Arg1, _Arg2>(_script);
-        _script.setglobal(name);
-        return *this;
-    }
-    
-    template <typename _Arg1, typename _Arg2, typename _Arg3> BindClass& create(const char* name)
-    {
-        CD::Constructor<_Class>::template push<_Arg1, _Arg2, _Arg3>(_script);
-        _script.setglobal(name);
-        return *this;
-    }
-    
-    template <typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4> BindClass& create(const char* name)
-    {
-        CD::Constructor<_Class>::template push<_Arg1, _Arg2, _Arg3, _Arg4>(_script);
-        _script.setglobal(name);
-        return *this;
-    }
-    
-    template <typename _Arg1, typename _Arg2, typename _Arg3, typename _Arg4, typename _Arg5> BindClass& create(const char* name)
-    {
-        CD::Constructor<_Class>::template push<_Arg1, _Arg2, _Arg3, _Arg4, _Arg5>(_script);
-        _script.setglobal(name);
-        return *this;
-    }
-    
-#endif
 
     BindClass& create_forward(const char* name, Creator creator)
     {

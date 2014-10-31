@@ -35,14 +35,10 @@
 #ifndef _H_LIBSCRIPT_FWD_H_
 #define _H_LIBSCRIPT_FWD_H_
 
-#ifdef _CPP_98_
-#	define FINAL
-#	define TODELETE
-#else
-#	include <tuple>
-#	define FINAL final
-#	define TODELETE = delete
-#endif
+#include <tuple>
+#include <initializer_list>
+#define FINAL final
+#define TODELETE = delete
 
 #include <string>
 #include <memory>

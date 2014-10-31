@@ -12,6 +12,8 @@ SET(SRC_LIST
     libscript_sys.cpp
     libscript_bind.h
     libscript_bind.cpp
+    libscript_cd.h
+    libscript_cd.cpp
     libscript_function.h
     libscript_function.cpp
     libscript_fwd.h
@@ -31,19 +33,6 @@ SET(SRC_LIST
     libscript_pusher.h
     libscript_pusher.cpp
 )
-
-IF(CPP_98)
-    SET(SRC_LIST
-        ${SRC_LIST} 
-        libscript_cd_cpp98.h
-    )
-ELSE()
-    SET(SRC_LIST
-        ${SRC_LIST}
-        libscript_cd.h
-        libscript_cd.cpp
-    )
-ENDIF()
 
 SOURCE_GROUP(${LIB_NAME} FILES ${SRC_LIST})
 

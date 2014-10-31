@@ -28,7 +28,6 @@ int foo2(Args& args, Pusher& pusher)
     return pusher.count();
 }
 
-#ifndef _CPP_98_
 
 int foo3(int n)
 {
@@ -40,7 +39,6 @@ void foo4(const char* s)
     std::cout << s << std::endl;
 }
 
-#endif
 
 int main()
 {
@@ -49,12 +47,8 @@ int main()
     script.execString("function foo1(s) print(s) end");
     script.getGlobalTable().set("foo2", getForwardFunction(script, foo2));
 
-#ifndef _CPP_98_
-
     script.getGlobalTable().set("foo3", getFunction(script, foo3));
     script.getGlobalTable().set("foo4", getFunction(script, foo4));
-
-#endif
 
     // Call foo1
     Function foo1 = script.getGlobal("foo1");
@@ -62,12 +56,8 @@ int main()
     // Call foo2
     script.execString("foo2({\"\tprint\", \"\ta\", \"\ttable\"})");
 
-#ifndef _CPP_98_
-
     // Call foo3
-    script.execString("print(foo3(2)) )");
+    script.execString("print(foo3(2))");
     // Call foo4
-    script.execString("foo4(\"call foo4\"");
-
-#endif
+    script.execString("foo4(\"call foo4\")");
 }
