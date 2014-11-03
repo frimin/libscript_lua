@@ -72,16 +72,7 @@ public:
         StackValue _key;
         StackValue _value;
     };
-    /*
-    struct Element
-    {
-        Element(const char* value);
-        Element(double value);
-        Element(long long value);
-        Element(Value value);
-        Element(const char* key, value);
-    };
-    */
+
     Table(const Stack& stack);
     Table(const Value& value);
     Table(const Table& copy);
@@ -93,16 +84,6 @@ public:
 
     /// @brief Set table[key] = value
     template<typename _Key, typename _Value> Table& set(_Key key, _Value value) 
-    {
-        pushRef(T_Table);
-        _pusher.push(key);
-        _pusher.push(value);
-        rawset(-3);
-        pop(1);
-        return *this;
-    }
-
-    Table& set(std::initializer_list<>)
     {
         pushRef(T_Table);
         _pusher.push(key);
