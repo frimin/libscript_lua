@@ -1,4 +1,4 @@
-Simple C++ Bind For Lua
+Simple Lua C++ Bind
 ==============
 
 License
