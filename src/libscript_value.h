@@ -173,13 +173,14 @@ public:
 
     StackValue& operator = (const StackValue& copy);
 
+protected:
+    int _index;
+
 private:
     void* _toClass(const char* metaname);
     void* _toReadOnlyClass(const char* metaname);
     const void* _toClassInfo(const char* metaname);
 
-private:
-    int _index;
     IValueDataSources* _dataSources;
 };
 
