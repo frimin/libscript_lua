@@ -141,7 +141,7 @@ void* StackValue::_toClass(const char* metaname)
     return info->readonly ? NULL : info->obj;
 }
 
-void* StackValue::_toConstClass(const char* metaname)
+void* StackValue::_toReadOnlyClass(const char* metaname)
 {
     DataSourcesDispatcher dispatcher(_dataSources);
     checkudata_L(_index, metaname);

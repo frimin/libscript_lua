@@ -112,9 +112,9 @@ public:
 
     /// @brief To a class const point.
     /// If the value is a full ClassInfo and have correct metatable in the registry, returns its const pointer
-    template<typename _Class> const _Class* toConstClass()
+    template<typename _Class> const _Class* toReadOnlyClass()
     {
-        return (_Class*)_toConstClass(typeid(_Class).name());
+        return (_Class*)_toReadOnlyClass(typeid(_Class).name());
     }
 
     /// @brief To a class info block point.
@@ -175,7 +175,7 @@ public:
 
 private:
     void* _toClass(const char* metaname);
-    void* _toConstClass(const char* metaname);
+    void* _toReadOnlyClass(const char* metaname);
     const void* _toClassInfo(const char* metaname);
 
 private:

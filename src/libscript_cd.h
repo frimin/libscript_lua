@@ -46,6 +46,8 @@
 
 _NAME_BEGIN
 
+typedef Pusher Returns;
+
 namespace CD
 {
 
@@ -75,7 +77,7 @@ private:
 class Function
 {
 public:
-    typedef int(*Forward)(Args& args, Pusher& pusher);
+    typedef void(*Forward)(Args& args, Returns& returns);
     
     template <typename _Func>
     static void push(Stack& stack, _Func func)
@@ -111,7 +113,9 @@ private:
 
         Pusher pusher(raw);
 
-        return w->value(args, pusher);
+        w->value(args, pusher);
+
+        return pusher.count();
     }
     
     template <typename ... _Args>
@@ -213,16 +217,15 @@ template<typename _Class>
 class Method
 {
 public:
-    typedef int(*Forward)(_Class* _this, Args& args, Pusher& pusher);
-    typedef int(*Forward_Const)(const _Class* _this, Args& args, Pusher& pusher);
+    typedef void(*Forward)(_Class* _this, Args& args, Returns& returns);
+    typedef void(*ReadOnlyForward)(const _Class* _this, Args& args, Returns& returns);
 
     template<typename _Method>
     static void push(Stack& stack, _Method method)
     {
         Wrapper<_Method>* w = (Wrapper<_Method>*)stack.newuserdata(sizeof(Wrapper<_Method>));
         w->value = method;
-        stack.pushboolean(false);
-        stack.pushcclosure(Method<_Class>::dispatcher<_Method>, 2);
+        stack.pushcclosure(Method<_Class>::dispatcher<_Method>, 1);
     }
 
     static void pushForward(Stack& stack, typename Method<_Class>::Forward method)
@@ -230,17 +233,15 @@ public:
         Wrapper<Method<_Class>::Forward>* w =
             (Wrapper<Method<_Class>::Forward>*)stack.newuserdata(sizeof(Wrapper<Method<_Class>::Forward>));
         w->value = method;
-        stack.pushboolean(false);
         stack.pushcclosure(Method<_Class>::forwardDispatcher, 1);
     }
 
-    static void pushForward_Const(Stack& stack, typename Method<_Class>::Forward_Const method)
+    static void pushForward(Stack& stack, typename Method<_Class>::ReadOnlyForward method)
     {
-        Wrapper<Method<_Class>::Forward>* w =
-            (Wrapper<Method<_Class>::Forward>*)stack.newuserdata(sizeof(Wrapper<Method<_Class>::Forward>));
+        Wrapper<Method<_Class>::ReadOnlyForward>* w =
+            (Wrapper<Method<_Class>::ReadOnlyForward>*)stack.newuserdata(sizeof(Wrapper<Method<_Class>::ReadOnlyForward>));
         w->value = method;
-        stack.pushboolean(true);
-        stack.pushcclosure(Method<_Class>::forwardDispatcher, 1);
+        stack.pushcclosure(Method<_Class>::readOnlyForwardDispatcher, 1);
     }
 
 private:
@@ -253,15 +254,6 @@ private:
         auto info = (ClassInfo<_Class>*)stack.touserdata(1);
 
         auto w = (Wrapper<_Method>*)stack.touserdata(Stack::upvalueindex(1));
-
-        if (info->readonly)
-        {
-            bool readonlyMethod = stack.tointeger(Stack::upvalueindex(2)) == 1;
-            if (readonlyMethod == false)
-            {
-                return stack.error_L("Try to call readonly class's usually method");
-            }
-        }
 
         return Method<_Class>::caller(stack, info, w->value);
     }
@@ -281,18 +273,38 @@ private:
 
         if (info->readonly)
         {
-            bool readonlyMethod = args.tointeger(Stack::upvalueindex(2)) == 1;
-            if (readonlyMethod == false)
-            {
-                return args.error_L("Try to call readonly class's usually method");
-            }
+            return args.error_L("Try to call readonly class's usually method");
         }
 
         Pusher pusher(raw);
 
         _Class* _this = args[1].toClass<_Class>();;
 
-        return w->value(_this, args, pusher);
+        w->value(_this, args, pusher);
+
+        return pusher.count();
+    }
+
+    static int readOnlyForwardDispatcher(RawInterface raw)
+    {
+        Args args(raw);
+
+        if (!args[1].isUserdata())
+        {
+            return args.error_L("Bad arg");
+        }
+
+        auto info = (ClassInfo<_Class>*)args.touserdata(1);
+
+        auto w = (Wrapper<Method<_Class>::ReadOnlyForward>*)args.touserdata(Stack::upvalueindex(1));
+
+        Pusher pusher(raw);
+
+        const _Class* _this = args[1].toReadOnlyClass<_Class>();;
+
+        w->value(_this, args, pusher);
+
+        return pusher.count();
     }
 
     template <typename ... _Args>

@@ -62,6 +62,7 @@ class BindClass FINAL
 public:
     typedef typename CD::Constructor<_Class>::Forward Creator;
     typedef typename CD::Method<_Class>::Forward Method;
+    typedef typename CD::Method<_Class>::ReadOnlyForward ReadOnlyMethod;
     typedef void (*Destroy)(_Class*);
 
     BindClass(Script& script) 
@@ -83,7 +84,7 @@ public:
         return *this;
     }
 
-    BindClass& create_forward(const char* name, Creator creator)
+    BindClass& createForward(const char* name, Creator creator)
     {
         CD::Constructor<_Class>::pushForward(_script, creator);
         _script.setglobal(name);
@@ -101,7 +102,17 @@ public:
         return *this;
     }
 
-    BindClass& method_forward(const char* name, Method method)
+    BindClass& methodForward(const char* name, Method method)
+    {
+        _metaTable.pushRef(Stack::T_Table);
+        _script.pushstring(name);
+        CD::Method<_Class>::pushForward(_script, method);
+        _script.rawset(-3);
+        _script.pop(1);
+        return *this;
+    }
+
+    BindClass& methodReadOnlyForward(const char* name, ReadOnlyMethod method)
     {
         _metaTable.pushRef(Stack::T_Table);
         _script.pushstring(name);

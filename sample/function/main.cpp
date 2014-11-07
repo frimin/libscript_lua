@@ -1,7 +1,7 @@
 #include <iostream>
 #include "libscript.h"
 
-int foo2(Args& args, Pusher& pusher)
+void foo2(Args& args, Pusher& pusher)
 {
     if (args[1].isTable())
     {
@@ -24,8 +24,6 @@ int foo2(Args& args, Pusher& pusher)
             }
         }
     }
-
-    return pusher.count();
 }
 
 

@@ -32,7 +32,7 @@ int main()
         Script script;
     
         BindClass<MyClass>(script)
-            .create_forward("MyClass", [](Args& arg)->MyClass*{
+            .createForward("MyClass", [](Args& arg)->MyClass*{
             switch (arg.count())
             {
             case 0:
@@ -46,23 +46,25 @@ int main()
             .destroy("__gc")
             .destroy("free")
             .method("foo2", &MyClass::foo2)
-            .method_forward("foo", [](MyClass* _this, Args& args, Pusher& pusher)->int{
+            .methodForward("print_and_increment", [](MyClass* _this, Args& args, Returns& returns){
             std::cout << _this->n << std::endl;
             _this->n++;
-            return 0;
-        });
+        })
+            .methodReadOnlyForward("print_only", [](const MyClass* _this, Args& args, Returns& returns){
+            std::cout << _this->n << std::endl;
+        })
             ;
 
         script.execString(R"( 
             a = MyClass()
-            a:foo()
-            a:foo()
-            a:foo()
+            a:print_and_increment()
+            a:print_and_increment()
+            a:print_and_increment()
 
             b = MyClass(0)
-            b:foo()
-            b:foo()
-            b:foo()
+            b:print_and_increment()
+            b:print_and_increment()
+            b:print_and_increment()
 
             a:free()
             b:free()
@@ -73,6 +75,19 @@ int main()
         MyClass* c = script["c"].toClass<MyClass>();
 
         std::cout << "c's value is :" << c->n << std::endl;
+
+        MyClass d(31415);
+
+        script.getGlobalTable().set("d", RefClass<MyClass>((const MyClass*)&d));
+
+        script.execString(R"(d:print_only())");
+
+        std::string errorinfo;
+
+        if(!script.execStringSafe(R"(d:print_and_increment())", &errorinfo))
+        {
+            std::cout << errorinfo << std::endl;
+        }
     }
 
     std::cout << ":)" << std::endl;

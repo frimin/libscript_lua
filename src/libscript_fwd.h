@@ -120,6 +120,7 @@ public:
         readonly = false;
     }
 
+    // readonly
     RefClass(const _Class* _c)
     {
         c = const_cast<_Class*>(_c);
