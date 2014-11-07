@@ -1,6 +1,17 @@
 Simple Lua C++ Bind
 ==============
 
+Its simple to using, like:
+
+```code
+#include "libscript.h"
+
+int main()
+{
+    Script script;
+    script.execString("print(\"hello world\")");
+}
+```
 License
 ============== 
 
