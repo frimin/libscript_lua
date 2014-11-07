@@ -21,6 +21,11 @@ SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windo
 SET(CMAKE_RELWITHDEBINFO_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
 SET(CMAKE_MINSIZEREL_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
 
+OPTION(SHARED_LIB "Make library to shared" ON)
+IF(SHARED_LIB)
+    ADD_DEFINITIONS(-D_SHARED_LIB_)
+ENDIF()
+
 #########################################################################################
 ## COMPILER OPTIONS
 #########################################################################################
@@ -38,11 +43,6 @@ ELSEIF(MSVC)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHa")
-    SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DELAYLOAD:advapi32.dll")
-    SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DELAYLOAD:psapi.dll")
-    SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DELAYLOAD:version.dll")
-    SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DELAYLOAD:dbghelp.dll")
-    SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DELAY:unload")
     SET(COMPILER_NAME "vc")
     IF(MSVC_VERSION GREATER 1600)
         SET(COMPILER_NAME "11")

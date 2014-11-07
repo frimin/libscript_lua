@@ -45,15 +45,19 @@
 #include <cassert>
 
 #ifndef _NAME_BEGIN
-#define _NAME_BEGIN
+#   define _NAME_BEGIN
 #endif
 
 #ifndef _NAME_END
-#define _NAME_END
+#   define _NAME_END
 #endif
 
 #ifndef EXPORT
-#define EXPORT
+#   ifdef _SHARED_LIB_
+#       define EXPORT __declspec(dllexport)
+#   else
+#       define EXPORT
+#   endif
 #endif
 
 #ifndef SCRIPT_EXCEPTION

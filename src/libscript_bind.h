@@ -53,7 +53,7 @@ Value getFunction(Stack& stack, _Func func)
     return stack;
 }
 
-Value getForwardFunction(Stack& stack, CD::Function::Forward func);
+Value EXPORT getForwardFunction(Stack& stack, CD::Function::Forward func);
 
 /// @brief Bind CPP Class
 template<typename _Class>

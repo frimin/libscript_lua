@@ -36,7 +36,11 @@ SET(SRC_LIST
 
 SOURCE_GROUP(${LIB_NAME} FILES ${SRC_LIST})
 
-ADD_LIBRARY(${LIB_NAME} ${SRC_LIST})
+IF(SHARED_LIB)
+    ADD_LIBRARY(${LIB_NAME} SHARED ${SRC_LIST})
+ELSE()
+    ADD_LIBRARY(${LIB_NAME} ${SRC_LIST})
+ENDIF()
 
 #########################################################################################
 ## INCLUDE & LINK
