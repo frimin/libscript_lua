@@ -46,7 +46,7 @@ _NAME_BEGIN
 class EXPORT Table FINAL : public Value
 {
 public:
-    /// @brief Access table contents
+    /// @brief Access table contents.
     /// Don't to new this class, that will be damage stack.
     class EXPORT Accessor FINAL
     {
@@ -55,8 +55,8 @@ public:
         ~Accessor();
         bool end();
         
-        /// @brief To next key / value
-        /// @warning Do not call Value::toString directly on a key
+        /// @brief To next key / value.
+        /// @warning Do not call Value::toString directly on a key.
         /// Visit : http://www.lua.org/manual/5.2/manual.html#lua_next
         void next();
         StackValue& key();
@@ -77,12 +77,12 @@ public:
     Table(const Value& value);
     Table(const Table& copy);
 
-    /// @brief Get table[key]
+    /// @brief Returns table[key].
     Value at(long long key);
     Value at(Value& key);
     Value at(const std::string& key);
 
-    /// @brief Set table[key] = value
+    /// @brief Set table[key] = value.
     template<typename _Key, typename _Value> Table& set(_Key key, _Value value) 
     {
         pushRef(T_Table);
@@ -93,10 +93,11 @@ public:
         return *this;
     }
 
+    /// @brief Returns integer keys count.
     std::size_t len();
 
-    /// @brief index value with given the key
-    /// @note When to index a nonexistent key, will be return a nil
+    /// @brief index value with given the key.
+    /// @note When to index a nonexistent key, will be return a nil.
     Table operator[](long long key);
     Table operator[](Value& value);
     Table operator[](const char *key);
