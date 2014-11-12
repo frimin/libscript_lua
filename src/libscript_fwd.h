@@ -52,8 +52,14 @@
 #   define _NAME_END
 #endif
 
+#if defined(_MSC_VER) || defined (_WIN32) || defined(_WIN64)
+#   if !defined(__WINDOWS__)
+#       define __WINDOWS__ 1
+#   endif
+#endif
+
 #ifndef EXPORT
-#   ifdef _SHARED_LIB_
+#   if defined(_SHARED_LIB_) && defined(__WINDOWS__)
 #       define EXPORT __declspec(dllexport)
 #   else
 #       define EXPORT

@@ -22,7 +22,9 @@ SET(CMAKE_RELWITHDEBINFO_POSTFIX "" CACHE STRING "add a postfix, usually empty o
 SET(CMAKE_MINSIZEREL_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
 
 OPTION(SHARED_LIB "Make library to shared" ON)
+
 IF(SHARED_LIB)
+    SET(CMAKE_MACOSX_RPATH 1)
     ADD_DEFINITIONS(-D_SHARED_LIB_)
 ENDIF()
 

@@ -40,7 +40,7 @@
 #include "libscript_pusher.h"
 
 #ifdef _SHARED_LIB_
-template class __declspec(dllexport) std::vector<Value*>;
+template class EXPORT std::vector<Value*>;
 #endif
 
 /// @addtogroup script
