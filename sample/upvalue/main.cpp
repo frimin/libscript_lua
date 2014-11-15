@@ -17,8 +17,7 @@ int foo(Args& args, Pusher& returns)
 int foo2(RawInterface raw)
 {
     UpValue v(raw, 1);
-    std::cout << v.toInteger() << std::endl;
-    v.reset(v.toInteger() + 1);
+    std::cout << v.toString() << std::endl;
     return 0;
 }
 
@@ -30,7 +29,7 @@ int main()
         script.newClosure(foo, /* There is upvalue contents*/"7", 6));
 
     script.getGlobalTable().set("foo2",
-        script.newClosure(foo2, 10));
+        script.newClosure(foo2, "test"));
 
-    script.execString("foo() for i=1, 10 do foo2() end");
+    script.execString("foo() foo2()");
 }

@@ -228,11 +228,11 @@ StackValue& StackValue::operator = (const StackValue& copy)
     return *this;
 }
 
-UpValue::UpValue(RawInterface raw, int upValueIndex) : StackValue(raw, Stack::upvalueindex(upValueIndex)), _pusher(raw)
+UpValue::UpValue(RawInterface raw, int upValueIndex) : StackValue(raw, Stack::upvalueindex(upValueIndex))
 {
 }
 
-UpValue::UpValue(const Stack& stack, int upValueIndex) : StackValue(stack, Stack::upvalueindex(upValueIndex)), _pusher(stack)
+UpValue::UpValue(const Stack& stack, int upValueIndex) : StackValue(stack, Stack::upvalueindex(upValueIndex))
 {
 }
 
@@ -327,7 +327,11 @@ Value::Value(const Stack& stack) : StackValue(stack, -1, this)
 
 Value::Value(const StackValue& value) : StackValue(value, -1, this)
 {
-    pushvalue(getIndex());
+    sameThread(value);
+
+    StackValue v = value;
+
+    v.pushvalue(v.getIndex());
 
     _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 }
@@ -393,20 +397,6 @@ void Value::reset(Stack& stack)
     _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 }
 
-void Value::reset(const StackValue& stack)
-{
-    releaseHandler();
-
-    if (_c_state != NULL)
-        sameThread(stack);
-    else
-        _c_state = stack._c_state;
-
-    pushvalue(getIndex());
-
-    _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
-}
-
 void Value::pushData()
 {
     this->pushRefSafe(NoneMask);
@@ -438,12 +428,12 @@ bool Value::operator != (Value& value)
 
 Value& Value::operator=(Value& copy)
 {
-    releaseHandler();
-
     if (_c_state != NULL)
         sameThread(copy);
     else
         _c_state = copy._c_state;
+
+    releaseHandler();
 
     _handler = ValueHandler::ref(copy._handler);
 
@@ -452,7 +442,16 @@ Value& Value::operator=(Value& copy)
 
 Value& Value::operator = (StackValue& copy)
 {
-    
+    if (_c_state != NULL)
+        sameThread(copy);
+    else
+        _c_state = copy._c_state;
+
+    releaseHandler();
+
+    copy.pushvalue(copy.getIndex());
+
+    _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 
     return *this;
 }

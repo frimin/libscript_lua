@@ -190,16 +190,8 @@ public:
     UpValue(RawInterface raw, int upValueIndex);
     explicit UpValue(const Stack& stack, int upValueIndex);
 
-    template<typename _Value> void reset(_Value value)
-    {
-        _pusher.push(value);
-        replace(_index);
-    }
-
 private:
     UpValue& operator = (const UpValue& copy) TODELETE;
-
-    Pusher _pusher;
 };
 
 struct ValueHandler;
@@ -223,16 +215,14 @@ public:
     /// Returns true if the value is given type, and false otherwise.
     bool pushRefSafe(TYPE check);
 
-    /// @brief Set new value from stack top, and then pops the top element.
+    /// @brief Set new value from stack top, then pop top.
     /// If stack is empty, Will to push a nil then to reset
     void reset();
 
-    /// @brief Set new value from given stack top, and then pops the top element.
+    /// @brief Set new value from given stack top, then pop top.
     /// If stack is empty, Will to push a nil then to reset
     /// You can change current value's stack
     void reset(Stack& stack);
-
-    void reset(const StackValue& stack);
 
     bool operator ==(Value& value);
     bool operator != (Value& value);
