@@ -12,6 +12,49 @@ int main()
     script.execString("print(\"hello world\")");
 }
 ```
+
+**Using function & closure**
+
+```code
+#include "libscript.h"
+
+void foo(const char* s)
+{
+    std::cout << "This is foo" << std::endl;
+}
+
+int foo2(RawInterface raw)
+{
+    UpValue v(raw, 1);
+    std::cout << v.toInteger() << std::endl;
+    v.reset(v.toInteger() + 1);
+    return 0;
+}
+
+int main()
+{
+    Script script;
+    
+    script.getGlobalTable().set("foo", 
+        script.newFunction(foo));
+    script.getGlobalTable().set("foo2",
+        script.newClosure(foo2, 1));
+    script.execString("foo() for i=1, 10 do foo2() end");
+}
+```
+
+**Using table**
+
+```code
+Script script;
+
+script.execString("function foo(t) for i, v in ipairs(t) do print(i, v) end end");
+
+Function foo = script.getGlobal("foo");
+
+foo(script.newTable("hello", "world", 3.1415, script.newTable()));
+```
+
 License
 ============== 
 
