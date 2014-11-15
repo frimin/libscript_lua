@@ -33,6 +33,7 @@
 // +----------------------------------------------------------------------
 
 #include "libscript_pusher.h"
+#include "libscript_value.h"
 
 /// @addtogroup script
 /// @{
@@ -40,6 +41,7 @@
 _NAME_BEGIN
 
 Pusher::Pusher(RawInterface raw) : Stack(raw), _push_count(0) { }
+Pusher::Pusher(const Stack& stack) : Stack(stack), _push_count(0) { }
 Pusher& Pusher::push(bool b)         { pushboolean(b); ++_push_count; return *this; }
 Pusher& Pusher::push(long long n)    { pushinteger(n); ++_push_count; return *this; }
 Pusher& Pusher::push(int n)          { pushinteger(n); ++_push_count; return *this; }
@@ -48,8 +50,8 @@ Pusher& Pusher::push(long n)         { pushinteger(n); ++_push_count; return *th
 Pusher& Pusher::push(const char* cstr) { pushstring(cstr); ++_push_count; return *this; }
 Pusher& Pusher::push(double f)       { pushnumber(f); ++_push_count; return *this; }
 Pusher& Pusher::push(CFunction func) { pushcfunction(func); ++_push_count; return *this; }
-Pusher& Pusher::push(Value::P_Nil)   { pushnil(); ++_push_count; return *this; }
-Pusher& Pusher::push(Value value)    { sameThread(value); value.pushRefSafe(NoneMask); ++_push_count; return *this; }
+Pusher& Pusher::push(Stack::P_Nil)   { pushnil(); ++_push_count; return *this; }
+Pusher& Pusher::push(Value& value)    { sameThread(value); value.pushRefSafe(NoneMask); ++_push_count; return *this; }
 Pusher& Pusher::push(Class c)     
 {
     ClassInfo<VOID_T>* info = (ClassInfo<VOID_T>*)newuserdata(sizeof(ClassInfo<VOID_T>));
@@ -75,6 +77,9 @@ Pusher& Pusher::push(Class c)
 void Pusher::reset(RawInterface raw){ reset(); _c_state = raw; }
 void Pusher::reset()                { _push_count = 0; }
 int Pusher::count() const           { return _push_count; }
+
+MultiPusher::MultiPusher(RawInterface raw) : Pusher(raw) { }
+MultiPusher::MultiPusher(const Stack& stack) : Pusher(stack) { }
 
 /// @}
 

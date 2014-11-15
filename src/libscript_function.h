@@ -51,25 +51,22 @@ _NAME_BEGIN
 class EXPORT Function FINAL : public Value
 {
 public:
-    Function(const Stack& stack);
+    explicit Function(const Stack& stack);
     Function(const Value& value);
     Function(const Function& copy);
     ~Function();
     
     /// @brief Call this function and given arguments
-    template<typename ... _Args>
-    Function& call(_Args ... arg)
+    template <typename ... _Args> Function& call(_Args ... arg)
     {
         return operator()(arg ...);
     }
 
-    template<typename ... _Args>
-    Function& operator()(_Args ... arg)
+    template <typename ... _Args> Function& operator()(_Args ... arg)
     {
-        std::tuple<_Args ...> tuple(arg ...);
         argReset();
         pushRef(T_Function);
-        _ArgPusher<std::tuple<_Args ...>, sizeof...(_Args)>::push(_pusher, tuple);
+        _pusher.push(arg ...);
         raw_call();
         return *this;
     }
@@ -86,32 +83,15 @@ public:
     Value& operator[](int i);
 
 private:
-
-    template<typename _Tuple, std::size_t _ArgN>
-    class _ArgPusher {
-    public:
-        static void push(Pusher& pusher, _Tuple& tuple)
-        {
-            _ArgPusher<_Tuple, _ArgN - 1>::push(pusher, tuple);
-            pusher.push(std::get<_ArgN - 1>(tuple));
-        }
-    };
-
-    template<typename _Tuple>
-    class _ArgPusher<_Tuple, 0> {
-    public:
-        static void push(Pusher& pusher, _Tuple& tuple) { }
-    };
-
     void argReset() { _pusher.reset(); _beform_stack_size = gettop(); }
 
     void raw_call();
 
 private:
-    int     _beform_stack_size;
-    int     _resultNum;
-    Pusher  _pusher;
-    Value*  _nil;
+    int _beform_stack_size;
+    int _resultNum;
+    Value* _nil;
+    MultiPusher _pusher;
     std::vector<Value*> _result;
 };
 

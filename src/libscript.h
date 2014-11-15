@@ -36,7 +36,7 @@
 #define _H_LIBSCRIPT_H_
 
 #include "libscript_sys.h"
-#include "libscript_bind.h"
 #include "libscript_table_dump.h"
+#include "libscript_bind.h"
 
 #endif

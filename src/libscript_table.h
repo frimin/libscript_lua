@@ -73,7 +73,7 @@ public:
         StackValue _value;
     };
 
-    Table(const Stack& stack);
+    explicit Table(const Stack& stack);
     Table(const Value& value);
     Table(const Table& copy);
 

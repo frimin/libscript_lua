@@ -69,9 +69,9 @@ StackValue::StackValue(const Stack& stack, int index, IValueDataSources* dataSou
 
 }
 
-StackValue::StackValue(const StackValue& stackvalue) : Stack(stackvalue), _dataSources(NULL)
+StackValue::StackValue(const StackValue& stackvalue) : Stack(stackvalue), _index(stackvalue._index), _dataSources(NULL)
 {
-    _index = stackvalue._index;
+
 }
 
 const char* StackValue::typeName()  { 
@@ -228,6 +228,14 @@ StackValue& StackValue::operator = (const StackValue& copy)
     return *this;
 }
 
+UpValue::UpValue(RawInterface raw, int upValueIndex) : StackValue(raw, Stack::upvalueindex(upValueIndex))
+{
+}
+
+UpValue::UpValue(const Stack& stack, int upValueIndex) : StackValue(stack, Stack::upvalueindex(upValueIndex))
+{
+}
+
 // To prevent when copy Value to call many Lua APIs
 // (Call the luaL_ref and luaL_unref neet so many time)
 struct ValueHandler
@@ -317,8 +325,21 @@ Value::Value(const Stack& stack) : StackValue(stack, -1, this)
     _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 }
 
+Value::Value(const StackValue& value) : StackValue(value, -1, this)
+{
+    sameThread(value);
+
+    StackValue v = value;
+
+    v.pushvalue(v.getIndex());
+
+    _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
+}
+
 Value::Value(const Value& copy) : StackValue(copy, -1, this)
 {
+    sameThread(copy);
+
     _handler = ValueHandler::ref(copy._handler);
 }
 
@@ -415,6 +436,22 @@ Value& Value::operator=(Value& copy)
     releaseHandler();
 
     _handler = ValueHandler::ref(copy._handler);
+
+    return *this;
+}
+
+Value& Value::operator = (StackValue& copy)
+{
+    if (_c_state != NULL)
+        sameThread(copy);
+    else
+        _c_state = copy._c_state;
+
+    releaseHandler();
+
+    copy.pushvalue(copy.getIndex());
+
+    _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 
     return *this;
 }

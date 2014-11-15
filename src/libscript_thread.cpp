@@ -57,9 +57,9 @@ Thread::Thread(const Value& value) : Value(value), _thread(NULL), _pusher(NULL)
     _pusher.reset(_thread.getInterface());
 }
 
-void Thread::load(const std::string& fileName)
+void Thread::load(const char* fileName)
 {
-    if (_thread.loadfile_L(fileName.c_str()))
+    if (_thread.loadfile_L(fileName))
     {
         std::string errorInfo = _thread.tostring(-1);
         _thread.pop(1);
@@ -67,9 +67,9 @@ void Thread::load(const std::string& fileName)
     }
 }
 
-void Thread::loadString(const std::string& str)
+void Thread::loadString(const char* str)
 {
-    if (_thread.loadbuffer_L(str.c_str(), str.size(), (str.substr(0, 10) + "...").c_str()))
+    if (_thread.loadbuffer_L(str, std::strlen(str), str))
     {
         std::string errorInfo = _thread.tostring(-1);
         _thread.pop(1);
@@ -77,9 +77,9 @@ void Thread::loadString(const std::string& str)
     }
 }
 
-bool Thread::loadSafe(const std::string& fileName, std::string* errorOut)
+bool Thread::loadSafe(const char* fileName, std::string* errorOut)
 {
-    if (_thread.loadfile_L(fileName.c_str()))
+    if (_thread.loadfile_L(fileName))
     {
         if(errorOut)
             *errorOut = _thread.tostring(-1);
@@ -89,9 +89,9 @@ bool Thread::loadSafe(const std::string& fileName, std::string* errorOut)
     return true;
 }
 
-bool Thread::loadStringSafe(const std::string& str, std::string* errorOut)
+bool Thread::loadStringSafe(const char* str, std::string* errorOut)
 {
-    if (_thread.loadbuffer_L(str.c_str(), str.size(), (str.substr(0, 10) + "...").c_str()))
+    if (_thread.loadbuffer_L(str, std::strlen(str), str))
     {
         if(errorOut)
             *errorOut = _thread.tostring(-1);
@@ -102,41 +102,40 @@ bool Thread::loadStringSafe(const std::string& str, std::string* errorOut)
     return true;
 }
 
-Value Thread::newFunction(const std::string& script)
+Value Thread::newFunction(const char* script)
 {
-    if (loadbuffer_L(script.c_str(), script.size(), (script.substr(0, 10) + "...").c_str()))
+    if (loadbuffer_L(script, std::strlen(script), script))
     {
         std::string errorInfo = tostring(-1);
         pop(1);
         SCRIPT_EXCEPTION(errorInfo);
     }
 
-    return _thread;
+    return (Value)_thread;
 }
 
 Value Thread::newFunction(CFunction function)
 {
     pushcfunction(function);
-    return _thread;
+    return (Value)_thread;
 }
 
 Value Thread::newTable()
 {
     newtable();
-    return _thread;
+    return (Value)_thread;
 }
 
 Value Thread::getGlobal(const std::string& name)
 {
     getglobal(name.c_str());
-    return _thread;
+    return (Value)_thread;
 }
 
 Table Thread::getGlobalTable()
 {
     pushglobaltable();
-    Value value(_thread);
-    return value;
+    return (Value)_thread;
 }
 
 void Thread::resultReset()

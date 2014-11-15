@@ -85,9 +85,9 @@ Script::~Script()
     Stack::close(_c_state);
 }
 
-void Script::exec(const std::string& fileName)
+void Script::exec(const char* filemame)
 {
-    if (dofile_L(fileName.c_str()))
+    if (dofile_L(filemame))
     {
         std::string errorInfo = tostring(-1); 
         pop(1);
@@ -95,9 +95,9 @@ void Script::exec(const std::string& fileName)
     }
 }
 
-void Script::execString(const std::string& str)
+void Script::execString(const char* str)
 {
-    if (loadbuffer_L(str.c_str(), str.size(), (str.substr(0, 20) + "...").c_str()) ||
+    if (loadbuffer_L(str, std::strlen(str), str) ||
         pcall(0, 0, 0))
     {
         std::string errorInfo = tostring(-1);
@@ -106,9 +106,9 @@ void Script::execString(const std::string& str)
     }
 }
 
-bool Script::execSafe(const std::string& fileName, std::string* errorOut)
+bool Script::execSafe(const char* fileName, std::string* errorOut)
 {
-    if (dofile_L(fileName.c_str()))
+    if (dofile_L(fileName))
     {
         if(errorOut)
             *errorOut = tostring(-1);
@@ -118,9 +118,9 @@ bool Script::execSafe(const std::string& fileName, std::string* errorOut)
     return true;
 }
 
-bool Script::execStringSafe(const std::string& str, std::string* errorOut)
+bool Script::execStringSafe(const char* str, std::string* errorOut)
 {
-    if (loadbuffer_L(str.c_str(), str.size(), (str.substr(0, 20) + "...").c_str()) ||
+    if (loadbuffer_L(str, std::strlen(str), str) ||
         pcall(0, 0, 0))
     {
         if(errorOut)
@@ -132,34 +132,10 @@ bool Script::execStringSafe(const std::string& str, std::string* errorOut)
     return true;
 }
 
-Value Script::newFunction(const std::string& script)
-{
-    if (loadbuffer_L(script.c_str(), script.size(), (script.substr(0, 20) + "...").c_str()))
-    {
-        std::string errorInfo = tostring(-1);
-        pop(1);
-        SCRIPT_EXCEPTION(errorInfo);
-    }
-
-    return *this;
-}
-
-Value Script::newFunction(CFunction function)
-{
-    pushcfunction(function);
-    return *this;
-}
-
-Value Script::newTable()
-{
-    newtable();
-    return *this;
-}
-
 Value Script::newThread()
 {
     Stack::newthread();
-    return *this;
+    return (Value)*this;
 }
 
 Value Script::newThread(Function function)
@@ -167,25 +143,25 @@ Value Script::newThread(Function function)
     Stack NL = Stack::newthread();
     function.pushRef(T_Function);
     xmove(NL, 1);
-    return *this;
+    return (Value)*this;
 }
 
-Value Script::getGlobal(const std::string& name)
+Value Script::getGlobal(const char* name)
 {
-    getglobal(name.c_str());
-    return *this;
+    getglobal(name);
+    return (Value)*this;
 }
 
 Table Script::getGlobalTable()
 {
     pushglobaltable();
-    return *this;
+    return (Value)*this;
 }
 
 Value Script::getNil()
 {
     pushnil();
-    return *this;
+    return (Value)*this;
 }
 
 Table Script::operator[](long long key)
@@ -228,7 +204,7 @@ Table Script::operator[](Value& value)
     return _value;
 }
 
-Table Script::operator[](const char *key)
+Table Script::operator[](const char* key)
 {
     Table global = getGlobalTable();
     

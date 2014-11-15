@@ -57,18 +57,22 @@ public:
 class EXPORT Args FINAL : public Stack
 {
 public:
-    Args(RawInterface raw);
-    Args(const Args& args);
+    Args(RawInterface raw, int upValueBegin = 0);
+    Args(const Args& args, int upValueBegin = 0);
+
+    Arg getArg(int i) { Arg v(*this, i); return v; }
+    UpValue getUpValue(int i) { return UpValue(*this, _upvalue_begin + i); }
 
     /// @brief Get a argument
     /// (Index begin with 1)
-    Arg operator[](int i) { Arg v(*this, i); return v; }
+    Arg operator[](int i) { return getArg(i); }
 
     /// @brief Returns arguments quantity
     int count() const { return _top; }
 
 private:
     int _top;
+    int _upvalue_begin;
 };
 
 /// @}

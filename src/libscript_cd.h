@@ -46,8 +46,6 @@
 
 _NAME_BEGIN
 
-typedef Pusher Returns;
-
 namespace CD
 {
 
@@ -77,7 +75,7 @@ private:
 class Function
 {
 public:
-    typedef void(*Forward)(Args& args, Returns& returns);
+    typedef int(*Forward)(Args& args, Pusher& returns);
     
     template <typename _Func>
     static void push(Stack& stack, _Func func)
@@ -87,11 +85,16 @@ public:
         stack.pushcclosure(Function::dispatcher<_Func>, 1);
     }
 
-    static void pushForward(Stack& stack, Function::Forward func)
+    template <typename ... _UpValue>
+    static void pushForward(Stack& stack, Function::Forward func, _UpValue ... upValue)
     {
         auto w = (Wrapper<Function::Forward>*)stack.newuserdata(sizeof(Wrapper<Function::Forward>));
         w->value = func;
-        stack.pushcclosure(Function::forwardDispatcher, 1);
+
+        MultiPusher pusher(stack);
+        pusher.push(upValue ...);
+        
+        stack.pushcclosure(Function::forwardDispatcher, pusher.count() + 1);
     }
 
 private:
@@ -107,15 +110,13 @@ private:
 
     static int forwardDispatcher(RawInterface raw)
     {
-        Args args(raw);
+        Args args(raw, 1);
 
         auto w = (Wrapper<Function::Forward>*)args.touserdata(Stack::upvalueindex(1));
 
         Pusher pusher(raw);
 
-        w->value(args, pusher);
-
-        return pusher.count();
+        return w->value(args, pusher);
     }
     
     template <typename ... _Args>
@@ -156,7 +157,7 @@ public:
     template <typename ... _Args>
     static void push(Stack& stack)
     {
-        stack.pushcfunction(Constructor<_Class>::dispatcher<_Args ...>);
+        stack.pushcclosure(Constructor<_Class>::dispatcher<_Args ...>, 0);
     }
 
     static void pushForward(Stack& stack, typename Constructor<_Class>::Forward method)
@@ -217,8 +218,8 @@ template<typename _Class>
 class Method
 {
 public:
-    typedef void(*Forward)(_Class* _this, Args& args, Returns& returns);
-    typedef void(*ReadOnlyForward)(const _Class* _this, Args& args, Returns& returns);
+    typedef int(*Forward)(_Class* _this, Args& args, Pusher& returns);
+    typedef int(*ReadOnlyForward)(const _Class* _this, Args& args, Pusher& returns);
 
     template<typename _Method>
     static void push(Stack& stack, _Method method)
@@ -260,7 +261,7 @@ private:
 
     static int forwardDispatcher(RawInterface raw)
     {
-        Args args(raw);
+        Args args(raw, 1);
 
         if (!args[1].isUserdata())
         {
@@ -280,14 +281,12 @@ private:
 
         _Class* _this = args[1].toClass<_Class>();;
 
-        w->value(_this, args, pusher);
-
-        return pusher.count();
+        return w->value(_this, args, pusher);
     }
 
     static int readOnlyForwardDispatcher(RawInterface raw)
     {
-        Args args(raw);
+        Args args(raw, 1);
 
         if (!args[1].isUserdata())
         {
@@ -300,11 +299,9 @@ private:
 
         Pusher pusher(raw);
 
-        const _Class* _this = args[1].toReadOnlyClass<_Class>();;
+        const _Class* _this = args[1].toReadOnlyClass<_Class>();
 
-        w->value(_this, args, pusher);
-
-        return pusher.count();
+        return w->value(_this, args, pusher);
     }
 
     template <typename ... _Args>
@@ -381,7 +378,7 @@ class Destructor
 public:
     static void push(Stack& stack)
     {
-        stack.pushcfunction(Destructor<_Class>::dispatcher);
+        stack.pushcclosure(Destructor<_Class>::dispatcher, 0);
     }
 
     static void push(Stack& stack, void (userDispatcher)(_Class*))
@@ -391,6 +388,8 @@ public:
         w->value = userDispatcher;
         stack.pushcclosure(Destructor<_Class>::userDispatcher, 1);
     }
+
+private:
 
     static int dispatcher(RawInterface raw)
     {

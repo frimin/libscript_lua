@@ -6,6 +6,7 @@ FOREACH(MY_SAMPLES
   thread
   bindclass
   function
+  upvalue
 )
 
 ADD_SUBDIRECTORY(${MY_SAMPLES})

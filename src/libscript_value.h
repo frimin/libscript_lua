@@ -35,7 +35,7 @@
 #ifndef _H_LIBSCRIPT_VALUE_H_
 #define _H_LIBSCRIPT_VALUE_H_
 
-#include "libscript_stack.h"
+#include "libscript_pusher.h"
 
 /// @addtogroup script
 /// @{
@@ -184,6 +184,16 @@ private:
     IValueDataSources* _dataSources;
 };
 
+class EXPORT UpValue : public StackValue
+{
+public:
+    UpValue(RawInterface raw, int upValueIndex);
+    explicit UpValue(const Stack& stack, int upValueIndex);
+
+private:
+    UpValue& operator = (const UpValue& copy) TODELETE;
+};
+
 struct ValueHandler;
 
 /// @brief Represent a value from registry
@@ -191,11 +201,9 @@ class EXPORT Value : public StackValue, private IValueDataSources
 {
     friend class Script;
 public:
-    /// @brief Initialization from RawInterface
     Value(RawInterface raw);
-    /// @brief Initialization from other stack
-    Value(const Stack& stack);
-    /// @brief Copy other
+    explicit Value(const Stack& stack);
+    Value(const StackValue& value);
     Value(const Value& copy);
     virtual ~Value();
 
@@ -210,6 +218,7 @@ public:
     /// @brief Set new value from stack top, then pop top.
     /// If stack is empty, Will to push a nil then to reset
     void reset();
+
     /// @brief Set new value from given stack top, then pop top.
     /// If stack is empty, Will to push a nil then to reset
     /// You can change current value's stack
@@ -218,6 +227,7 @@ public:
     bool operator ==(Value& value);
     bool operator != (Value& value);
     Value& operator = (Value& copy);
+    Value& operator = (StackValue& copy);
 
 private:
     virtual void pushData();

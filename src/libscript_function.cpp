@@ -67,7 +67,7 @@ Table Function::getReuslt()
 {
     newtable();
     Stack stack(_c_state);
-    Table t = stack;
+    Table t(stack);
 
     for (int i = 1; i <= resultCount(); ++i)
     {
@@ -95,7 +95,8 @@ void Function::raw_call()
 {
     if (Stack::pcall(_pusher.count(), /*LUA_MULTRET*/-1, 0))
     {
-        SCRIPT_EXCEPTION(Stack(_c_state).tostring(-1));
+        const char* errorStr = Stack(_c_state).tostring(-1);
+        SCRIPT_EXCEPTION(errorStr);
     }
 
     int resultNum = gettop() - _beform_stack_size;

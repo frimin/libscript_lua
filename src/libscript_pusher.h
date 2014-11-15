@@ -35,7 +35,7 @@
 #ifndef _H_LIBSCRIPT_PUSHER_H_
 #define _H_LIBSCRIPT_PUSHER_H_
 
-#include "libscript_value.h"
+#include "libscript_stack.h"
 
 /// @addtogroup script
 /// @{
@@ -43,10 +43,11 @@
 _NAME_BEGIN
 
 
-class EXPORT Pusher FINAL : public Stack
+class EXPORT Pusher : public Stack
 {
 public:
     Pusher(RawInterface raw);
+    Pusher(const Stack& stack);
 
     /// --- Push value into stack ---
     Pusher& push(bool b);
@@ -57,8 +58,8 @@ public:
     Pusher& push(const char* cstr);
     Pusher& push(double f);
     Pusher& push(CFunction func);
-    Pusher& push(Value::P_Nil);
-    Pusher& push(Value value);
+    Pusher& push(Stack::P_Nil);
+    Pusher& push(Value& value);
     Pusher& push(Class c);
 
     void reset(RawInterface raw);
@@ -67,6 +68,37 @@ public:
 
 private:
     int _push_count;
+};
+
+class EXPORT MultiPusher : public Pusher
+{
+public:
+    MultiPusher(RawInterface raw);
+    MultiPusher(const Stack& stack);
+
+    template <typename ... _Value> Pusher& push(_Value ... arg)
+    {
+        std::tuple<_Value ...> tuple(arg ...);
+        _ArgPusher<std::tuple<_Value ...>, sizeof...(_Value)>::multiPush(*this, tuple);
+        return *this;
+    }
+
+private:
+    template<typename _Tuple, std::size_t _N>
+    class _ArgPusher {
+    public:
+        static void multiPush(Pusher& pusher, _Tuple& tuple)
+        {
+            _ArgPusher<_Tuple, _N - 1>::multiPush(pusher, tuple);
+            pusher.push(std::get<_N - 1>(tuple));
+        }
+    };
+
+    template<typename _Tuple>
+    class _ArgPusher<_Tuple, 0> {
+    public:
+        static void multiPush(Pusher& pusher, _Tuple& tuple) { }
+    };
 };
 
 /// @}

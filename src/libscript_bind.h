@@ -46,15 +46,6 @@
 
 _NAME_BEGIN
 
-template <typename _Func>
-Value getFunction(Stack& stack, _Func func)
-{
-    CD::Function::push<_Func>(stack, func);
-    return stack;
-}
-
-Value EXPORT getForwardFunction(Stack& stack, CD::Function::Forward func);
-
 /// @brief Bind CPP Class
 template<typename _Class>
 class BindClass FINAL

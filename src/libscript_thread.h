@@ -50,28 +50,26 @@ class EXPORT Thread FINAL : public Value
 public:
     typedef StackValue Result;
 
-    Thread(const Stack& stack);
+    explicit Thread(const Stack& stack);
     Thread(const Value& value);
 
-    void load(const std::string& fileName);
-    void loadString(const std::string& str);
+    void load(const char* filename);
+    void loadString(const char* str);
 
-    bool loadSafe(const std::string& fileName, std::string* errorOut = NULL);
-    bool loadStringSafe(const std::string& str, std::string* errorOut = NULL);
+    bool loadSafe(const char* filename, std::string* errorOut = NULL);
+    bool loadStringSafe(const char* str, std::string* errorOut = NULL);
     
-    Value newFunction(const std::string& script);
+    Value newFunction(const char* script);
     Value newFunction(CFunction function);
     Value newTable();
     Value getGlobal(const std::string& name);
     Table getGlobalTable();
 
     /// @brief Resume this thread and given arguments
-    template<typename ... _Args>
-    THREADSTATUS resume(_Args ... arg)
+    template<typename ... _Args> THREADSTATUS resume(_Args ... arg)
     {
-        std::tuple<_Args ...> tuple(arg ...);
         resultReset();
-        _ArgPusher<std::tuple<_Args ...>, sizeof...(_Args)>::push(_pusher, tuple);
+        _pusher.push(arg ...);
         return _resume();
     }
 
@@ -87,23 +85,6 @@ public:
     RawInterface getThreadInterface();
 
 private:
-
-    template<typename _Tuple, std::size_t _ArgN>
-    class _ArgPusher {
-    public:
-        static void push(Pusher& pusher, _Tuple& tuple)
-        {
-            _ArgPusher<_Tuple, _ArgN - 1>::push(pusher, tuple);
-            pusher.push(std::get<_ArgN - 1>(tuple));
-        }
-    };
-
-    template<typename _Tuple>
-    class _ArgPusher<_Tuple, 0> {
-    public:
-        static void push(Pusher& pusher, _Tuple& tuple) { }
-    };
-
     void resultReset();
 
     THREADSTATUS _resume();
@@ -112,7 +93,7 @@ private:
     int _beform_stack_size;
     int _resultNum;
     Stack _thread;
-    Pusher _pusher;
+    MultiPusher _pusher;
 };
 
 /// @}

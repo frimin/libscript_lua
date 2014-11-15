@@ -46,12 +46,14 @@ int main()
             .destroy("__gc")
             .destroy("free")
             .method("foo2", &MyClass::foo2)
-            .methodForward("print_and_increment", [](MyClass* _this, Args& args, Returns& returns){
+            .methodForward("print_and_increment", [](MyClass* _this, Args& args, Pusher& returns) -> int{
             std::cout << _this->n << std::endl;
             _this->n++;
+            return returns.count();
         })
-            .methodReadOnlyForward("print_only", [](const MyClass* _this, Args& args, Returns& returns){
+            .methodReadOnlyForward("print_only", [](const MyClass* _this, Args& args, Pusher& returns) -> int{
             std::cout << _this->n << std::endl;
+            return returns.count();
         })
             ;
 

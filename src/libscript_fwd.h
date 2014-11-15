@@ -67,8 +67,8 @@
 #endif
 
 #ifndef SCRIPT_EXCEPTION
-#include <exception>
-#define SCRIPT_EXCEPTION(s) throw std::logic_error(s)
+#   include <exception>
+#   define SCRIPT_EXCEPTION(s) throw std::logic_error(s)
 #endif
 
 struct lua_State;

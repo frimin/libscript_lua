@@ -12,7 +12,7 @@ int main()
         end\
     ";
 
-    script.execString(code);
+    script.execString(code.c_str());
 
     Thread thread = script.newThread(script["userthread"]);
 

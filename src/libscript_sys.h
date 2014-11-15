@@ -42,6 +42,7 @@
 #include "libscript_table.h"
 #include "libscript_function.h"
 #include "libscript_thread.h"
+#include "libscript_cd.h"
 
 /// @addtogroup script
 /// @{
@@ -55,18 +56,71 @@ public:
     Script(bool openlibs, MemAllocation* alloc);
     ~Script();
 
-    void exec(const std::string& fileName);
-    void execString(const std::string& str);
+    void exec(const char* filename);
+    void execString(const char* str);
     
-    bool execSafe(const std::string& fileName, std::string* errorOut = NULL);
-    bool execStringSafe(const std::string& str, std::string* errorOut = NULL);
+    bool execSafe(const char* filename, std::string* errorOut = NULL);
+    bool execStringSafe(const char* str, std::string* errorOut = NULL);
+    
+    template <typename _Func> Value newFunction(_Func function)
+    {
+        CD::Function::push<_Func>(*this, function);
+        return (Value)*this;
+    }
+    
+    template <> Value newFunction(const char* script)
+    {
+        if (loadbuffer_L(script, std::strlen(script), script))
+        {
+            std::string errorInfo = tostring(-1);
+            pop(1);
+            SCRIPT_EXCEPTION(errorInfo);
+        }
+        return (Value)*this;
+    }
 
-    Value newFunction(const std::string& script);
-    Value newFunction(CFunction function);
-    Value newTable();
+    template <> Value newFunction(CFunction function)
+    {
+        pushcclosure(function, 0);
+        return (Value)*this;
+    }
+
+    template <> Value newFunction(CD::Function::Forward function)
+    {
+        CD::Function::pushForward(*this, function);
+        return (Value)*this;
+    }
+
+    template <typename ... _UpValue> Value newClosure(CFunction function, _UpValue ... upValue)
+    {
+        MultiPusher pusher(*this);
+        pusher.push(upValue ...);
+        pushcclosure(function, pusher.count());
+        return (Value)*this;
+    }
+    
+    template <typename ... _UpValue> Value newClosure(CD::Function::Forward function, _UpValue ... upValue)
+    {
+        CD::Function::pushForward<_UpValue ...>(*this, function, upValue ...);
+        return (Value)*this;
+    }
+    
+    template <typename ... _Value> Value newTable(_Value ... value)
+    {
+        newtable();
+
+        MultiPusher pusher(*this);
+        pusher.push(value ...);
+
+        for (int i = pusher.count(); i != 0; --i)
+            rawseti(-(i + 1), i);
+
+        return (Value)*this;
+    }
+
     Value newThread();
     Value newThread(Function function);
-    Value getGlobal(const std::string& name);
+    Value getGlobal(const char* name);
     Table getGlobalTable();
     Value getNil();
     
@@ -82,7 +136,7 @@ public:
     /// If given index is a nonexistent key, will be return a nil
     Table operator[](long long key);
     Table operator[](Value& value);
-    Table operator[](const char *key);
+    Table operator[](const char* key);
 
 private:
     Script(const Script& copy) TODELETE;
