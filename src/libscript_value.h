@@ -190,8 +190,16 @@ public:
     UpValue(RawInterface raw, int upValueIndex);
     explicit UpValue(const Stack& stack, int upValueIndex);
 
+    template<typename _Value> void reset(_Value value)
+    {
+        _pusher.push(value);
+        replace(_index);
+    }
+
 private:
     UpValue& operator = (const UpValue& copy) TODELETE;
+
+    Pusher _pusher;
 };
 
 struct ValueHandler;

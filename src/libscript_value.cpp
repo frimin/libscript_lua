@@ -228,11 +228,11 @@ StackValue& StackValue::operator = (const StackValue& copy)
     return *this;
 }
 
-UpValue::UpValue(RawInterface raw, int upValueIndex) : StackValue(raw, Stack::upvalueindex(upValueIndex))
+UpValue::UpValue(RawInterface raw, int upValueIndex) : StackValue(raw, Stack::upvalueindex(upValueIndex)), _pusher(raw)
 {
 }
 
-UpValue::UpValue(const Stack& stack, int upValueIndex) : StackValue(stack, Stack::upvalueindex(upValueIndex))
+UpValue::UpValue(const Stack& stack, int upValueIndex) : StackValue(stack, Stack::upvalueindex(upValueIndex)), _pusher(stack)
 {
 }
 
