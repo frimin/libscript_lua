@@ -74,63 +74,63 @@ StackValue::StackValue(const StackValue& stackvalue) : Stack(stackvalue), _index
 
 }
 
-const char* StackValue::typeName()  { 
+const char* StackValue::typeName()  {
     DataSourcesDispatcher dispatcher(_dataSources);
-    return typename_L(_index); 
+    return typename_L(_index);
 }
 
 Stack::TYPE StackValue::type()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
-    return Stack::type(_index); 
+    return Stack::type(_index);
 }
 
 bool StackValue::toBoolean()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
-    return toboolean(_index); 
+    return toboolean(_index);
 }
 
 CFunction StackValue::toCFunction()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
     return tocfunction(_index);
 }
 
 long long StackValue::toInteger()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
-    return tointeger(_index); 
+    return tointeger(_index);
 }
 
-const char* StackValue::toLString(std::size_t* len) 
-{ 
+const char* StackValue::toLString(std::size_t* len)
+{
     DataSourcesDispatcher dispatcher(_dataSources);
     return tolstring(_index, len);
 }
 
 double StackValue::toNumber()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
-    return tonumber(_index); 
+    return tonumber(_index);
 }
 
-const void* StackValue::toPointer() 
-{ 
+const void* StackValue::toPointer()
+{
     DataSourcesDispatcher dispatcher(_dataSources);
-    return topointer(_index); 
+    return topointer(_index);
 }
 
 void* StackValue::toUserdata()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
-    return touserdata(_index); 
+    return touserdata(_index);
 }
 
 const char* StackValue::toString()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
-    return tostring(_index); 
+    return tostring(_index);
 }
 
 void* StackValue::_toClass(const char* metaname)
@@ -157,7 +157,7 @@ const void* StackValue::_toClassInfo(const char* metaname)
 }
 
 bool StackValue::isBoolean()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
     return isboolean(_index);
 }
@@ -169,13 +169,13 @@ bool StackValue::isCFunction()
 }
 
 bool StackValue::isFunction()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
     return isfunction(_index);
 }
 
 bool StackValue::isNil()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
     return isnil(_index);
 }
@@ -183,41 +183,41 @@ bool StackValue::isNil()
 bool StackValue::isNone()
 {
     DataSourcesDispatcher dispatcher(_dataSources);
-    return isnone(_index); 
+    return isnone(_index);
 }
 
 bool StackValue::isNoneOrNil()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
-    return isnoneornil(_index); 
+    return isnoneornil(_index);
 }
 
 bool StackValue::isNumber()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
-    return isnumber(_index); 
+    return isnumber(_index);
 }
 
 bool StackValue::isString()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
-    return isstring(_index); 
+    return isstring(_index);
 }
 
 bool StackValue::isTable()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
-    return istable(_index); 
+    return istable(_index);
 }
 
 bool StackValue::isThread()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
-    return isthread(_index); 
+    return isthread(_index);
 }
 
 bool StackValue::isUserdata()
-{ 
+{
     DataSourcesDispatcher dispatcher(_dataSources);
     return isuserdata(_index);
 }
@@ -242,8 +242,8 @@ struct ValueHandler
 {
     int value;
     int refCount;
-	
-	ValueHandler() : value(0), refCount(0) { }
+
+    ValueHandler() : value(0), refCount(0) { }
 
     static ValueHandler* create(int value)
     {
@@ -286,7 +286,7 @@ struct ValueHandler
         ++handler->refCount;
         return handler;
     }
-    
+
     static void clearFree()
     {
         while (_s_free_list.size())
@@ -327,11 +327,7 @@ Value::Value(const Stack& stack) : StackValue(stack, -1, this)
 
 Value::Value(const StackValue& value) : StackValue(value, -1, this)
 {
-    sameThread(value);
-
-    StackValue v = value;
-
-    v.pushvalue(v.getIndex());
+    pushvalue(getIndex());
 
     _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 }
@@ -352,7 +348,7 @@ void Value::pushRef(TYPE check)
 {
     rawgeti(Stack::REGISTRYINDEX(), _handler->value);
 
-    if (check != NoneMask) 
+    if (check != NoneMask)
     {
         if (Stack::type(-1) != check)
             SCRIPT_EXCEPTION("Bad stackobj type.");
@@ -397,6 +393,20 @@ void Value::reset(Stack& stack)
     _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 }
 
+void Value::reset(const StackValue& stack)
+{
+    releaseHandler();
+
+    if (_c_state != NULL)
+        sameThread(stack);
+    else
+        _c_state = stack._c_state;
+
+    pushvalue(getIndex());
+
+    _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
+}
+
 void Value::pushData()
 {
     this->pushRefSafe(NoneMask);
@@ -428,12 +438,12 @@ bool Value::operator != (Value& value)
 
 Value& Value::operator=(Value& copy)
 {
+    releaseHandler();
+
     if (_c_state != NULL)
         sameThread(copy);
     else
         _c_state = copy._c_state;
-
-    releaseHandler();
 
     _handler = ValueHandler::ref(copy._handler);
 
@@ -442,16 +452,7 @@ Value& Value::operator=(Value& copy)
 
 Value& Value::operator = (StackValue& copy)
 {
-    if (_c_state != NULL)
-        sameThread(copy);
-    else
-        _c_state = copy._c_state;
 
-    releaseHandler();
-
-    copy.pushvalue(copy.getIndex());
-
-    _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
 
     return *this;
 }

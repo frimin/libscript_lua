@@ -74,7 +74,7 @@ public:
     /// @brief Converts a value  to a C function.
     /// That value must be a C function; otherwise, returns NULL.
     CFunction toCFunction();
-    
+
     /// @brief Converts the value to the signed integral type. 
     /// The value must be a number or a string convertible to a number.
     /// otherwise, lua_tointegerx returns 0.
@@ -140,7 +140,7 @@ public:
 
     /// @brief Returns true if this value is not valid or if the value is nil, and false otherwise.
     bool isNoneOrNil();
-    
+
     /// @brief Returns true if the value is a number or a string convertible to a number, and false otherwise.
     bool isNumber();
 
@@ -223,14 +223,16 @@ public:
     /// Returns true if the value is given type, and false otherwise.
     bool pushRefSafe(TYPE check);
 
-    /// @brief Set new value from stack top, then pop top.
+    /// @brief Set new value from stack top, and then pops the top element.
     /// If stack is empty, Will to push a nil then to reset
     void reset();
 
-    /// @brief Set new value from given stack top, then pop top.
+    /// @brief Set new value from given stack top, and then pops the top element.
     /// If stack is empty, Will to push a nil then to reset
     /// You can change current value's stack
     void reset(Stack& stack);
+
+    void reset(const StackValue& stack);
 
     bool operator ==(Value& value);
     bool operator != (Value& value);
