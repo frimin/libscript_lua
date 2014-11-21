@@ -1,4 +1,4 @@
-Simple Lua C++ Bind
+Simple Lua C++11 Bind
 ==============
 
 Its simple to using, like:

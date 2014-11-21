@@ -17,6 +17,8 @@ SET(SRC_LIST
     libscript_function.h
     libscript_function.cpp
     libscript_fwd.h
+    libscript_libext.cpp
+    libscript_libext.h
     libscript_args.h
     libscript_args.cpp
     libscript_luaapi.h

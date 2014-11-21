@@ -1,3 +1,4 @@
+#include <iostream>
 #include "libscript.h"
 
 int foo(Args& args, Pusher& returns)
