@@ -37,9 +37,9 @@
 _NAME_BEGIN
 
 Arg::Arg(RawInterface raw, int index) : StackValue(raw, index, NULL) {}
-Arg::Arg(Stack stack, int index) : StackValue(stack, index, NULL) {}
+Arg::Arg(StackInterface stack, int index) : StackValue(stack, index, NULL) {}
 Value Arg::toValue() { pushvalue(getIndex()); return (Value)*this; }
-Args::Args(RawInterface raw, int upValueBegin) : Stack(raw), _upvalue_begin(upValueBegin) { _top = gettop(); }
-Args::Args(const Args& args, int upValueBegin) : Stack(args), _upvalue_begin(upValueBegin) { _top = args._top; }
+Args::Args(RawInterface raw, int upValueBegin) : StackInterface(raw), _upvalue_begin(upValueBegin) { _top = gettop(); }
+Args::Args(const Args& args, int upValueBegin) : StackInterface(args), _upvalue_begin(upValueBegin) { _top = args._top; }
 
 _NAME_END

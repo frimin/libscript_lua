@@ -73,7 +73,7 @@ public:
         StackValue _value;
     };
 
-    explicit Table(const Stack& stack);
+    explicit Table(const StackInterface& stack);
     Table(const Value& value);
     Table(const Table& copy);
 
@@ -81,6 +81,10 @@ public:
     Value at(long long key);
     Value at(Value& key);
     Value at(const std::string& key);
+
+	Table getMetaTable();
+	void setMetaTable(Table& t);
+	void setMetaTable(Value& t);
 
     /// @brief Set table[key] = value.
     template<typename _Key, typename _Value> Table& set(_Key key, _Value value) 
@@ -98,7 +102,7 @@ public:
 
     /// @brief index value with given the key.
     /// @note When to index a nonexistent key, will be return a nil.
-    Table operator[](long long key);
+    Table operator[](int key);
     Table operator[](Value& value);
     Table operator[](const char *key);
 

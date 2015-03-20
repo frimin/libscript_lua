@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-Function::Function(const Stack& stack) : Value(stack), _pusher(NULL), _nil(NULL)
+Function::Function(const StackInterface& stack) : Value(stack), _pusher(NULL), _nil(NULL)
 {
     _pusher.reset(getInterface());
 }
@@ -66,7 +66,7 @@ Function::~Function()
 Table Function::getReuslt()
 {
     newtable();
-    Stack stack(_c_state);
+    StackInterface stack(_c_state);
     Table t(stack);
 
     for (int i = 1; i <= resultCount(); ++i)
@@ -93,9 +93,9 @@ Value& Function::operator[](int i)
 
 void Function::raw_call()
 {
-    if (Stack::pcall(_pusher.count(), /*LUA_MULTRET*/-1, 0))
+    if (StackInterface::pcall(_pusher.count(), /*LUA_MULTRET*/-1, 0))
     {
-        const char* errorStr = Stack(_c_state).tostring(-1);
+        const char* errorStr = StackInterface(_c_state).tostring(-1);
         SCRIPT_EXCEPTION(errorStr);
     }
 

@@ -44,20 +44,20 @@ _NAME_BEGIN
 Module::Module(Script& script)
     : _module(script.getGlobalTable()), _pusher(script.getInterface())
 {
-    _badFlag = !_module.pushRefSafe(Stack::T_Table);
+    _badFlag = !_module.pushRefSafe(StackInterface::T_Table);
 }
 
 Module::Module(Table table)
     : _module(table), _pusher(table.getInterface())
 {
-    _badFlag = !_module.pushRefSafe(Stack::T_Table);
+    _badFlag = !_module.pushRefSafe(StackInterface::T_Table);
 }
 
 Module::Module(Script& script, const char* name)
     : _module(script.newTable()), _pusher(script.getInterface())
 {
     script.getGlobalTable().set(name, _module);
-    _badFlag = !_module.pushRefSafe(Stack::T_Table);
+    _badFlag = !_module.pushRefSafe(StackInterface::T_Table);
 }
 
 Module::~Module()

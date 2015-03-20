@@ -37,14 +37,14 @@
 
 _NAME_BEGIN
 
-Script::Script(bool openlibs, MemAllocFunc alloc, void* ud) : Stack(NULL)
+Script::Script(bool openlibs, MemAllocFunc alloc, void* ud) : StackInterface(NULL)
 {
     RawInterface raw = NULL;
 
     if (alloc == NULL)
-        raw = Stack::newstate_L();
+        raw = StackInterface::newstate_L();
     else
-        raw = Stack::newstate(alloc, ud);
+        raw = StackInterface::newstate(alloc, ud);
 
     _c_state = raw;
 
@@ -64,14 +64,14 @@ static void *l_alloc(void *ud, void *ptr, size_t osize, size_t nsize)
         return alloc->alloc(nsize);
 }
 
-Script::Script(bool openlibs, MemAllocation* alloc) : Stack(NULL)
+Script::Script(bool openlibs, MemAllocation* alloc) : StackInterface(NULL)
 {
     RawInterface raw = NULL;
 
     if (alloc == NULL)
-        raw = Stack::newstate_L();
+        raw = StackInterface::newstate_L();
     else
-        raw = Stack::newstate(l_alloc, alloc);
+        raw = StackInterface::newstate(l_alloc, alloc);
 
     _c_state = raw;
 
@@ -82,7 +82,7 @@ Script::Script(bool openlibs, MemAllocation* alloc) : Stack(NULL)
 Script::~Script()
 {
     Value::endOfHandlerRefBuffer();
-    Stack::close(_c_state);
+    StackInterface::close(_c_state);
 }
 
 void Script::exec(const char* filemame)
@@ -134,13 +134,13 @@ bool Script::execStringSafe(const char* str, std::string* errorOut)
 
 Value Script::newThread()
 {
-    Stack::newthread();
+    StackInterface::newthread();
     return (Value)*this;
 }
 
 Value Script::newThread(Function function)
 {
-    Stack NL = Stack::newthread();
+    StackInterface NL = StackInterface::newthread();
     function.pushRef(T_Function);
     xmove(NL, 1);
     return (Value)*this;
@@ -164,7 +164,7 @@ Value Script::getNil()
     return (Value)*this;
 }
 
-Table Script::operator[](long long key)
+Table Script::operator[](int key)
 {
     Table global = getGlobalTable();
     

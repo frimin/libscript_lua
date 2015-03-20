@@ -51,7 +51,7 @@ _NAME_BEGIN
 class EXPORT Function FINAL : public Value
 {
 public:
-    explicit Function(const Stack& stack);
+    explicit Function(const StackInterface& stack);
     Function(const Value& value);
     Function(const Function& copy);
     ~Function();

@@ -43,11 +43,11 @@
 _NAME_BEGIN
 
 
-class EXPORT Pusher : public Stack
+class EXPORT Pusher : public StackInterface
 {
 public:
     Pusher(RawInterface raw);
-    Pusher(const Stack& stack);
+    Pusher(const StackInterface& stack);
 
     /// --- Push value into stack ---
     Pusher& push(bool b);
@@ -58,7 +58,7 @@ public:
     Pusher& push(const char* cstr);
     Pusher& push(double f);
     Pusher& push(CFunction func);
-    Pusher& push(Stack::P_Nil);
+    Pusher& push(StackInterface::P_Nil);
     Pusher& push(Value& value);
     Pusher& push(Class c);
 
@@ -74,7 +74,7 @@ class EXPORT MultiPusher : public Pusher
 {
 public:
     MultiPusher(RawInterface raw);
-    MultiPusher(const Stack& stack);
+    MultiPusher(const StackInterface& stack);
 
     template <typename ... _Value> Pusher& push(_Value ... arg)
     {

@@ -42,9 +42,9 @@ _NAME_BEGIN
 /// @addtogroup script
 /// @{
 
-/// @brief Stack base operations
+/// @brief StackInterface base operations
 /// Packaging lua API and constants
-class EXPORT Stack
+class EXPORT StackInterface
 {
     friend class Value;
 public:
@@ -110,14 +110,14 @@ public:
         OP_LE = 2,  // <=
     };
 
-    Stack(RawInterface raw);
+    StackInterface(RawInterface raw);
 
-    Stack(const Stack& stack);
+    StackInterface(const StackInterface& stack);
 
-    virtual ~Stack();
+    virtual ~StackInterface();
 
-    void sameThread(const Stack& stack) const;
-    bool sameThreadSafe(const Stack& stack) const;
+    void sameThread(const StackInterface& stack) const;
+    bool sameThreadSafe(const StackInterface& stack) const;
 
     RawInterface getInterface() const { return _c_state; }
 
@@ -222,7 +222,7 @@ public:
     TYPE type(int index);
     const char* typename_(TYPE tp);
     static int upvalueindex(int i);
-    void xmove(Stack& to, int n);
+    void xmove(StackInterface& to, int n);
     int yield(int nresults);
     int yieldk(int nresults, int ctx, CFunction k);
 

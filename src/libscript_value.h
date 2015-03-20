@@ -52,11 +52,11 @@ struct IValueDataSources
 };
 
 /// @brief Represent a value from stack
-class EXPORT StackValue : public Stack
+class EXPORT StackValue : public StackInterface
 {
 public:
     StackValue(RawInterface raw, int index, IValueDataSources* dataSources = NULL);
-    StackValue(const Stack& stack, int index, IValueDataSources* dataSources = NULL);
+    StackValue(const StackInterface& stack, int index, IValueDataSources* dataSources = NULL);
     StackValue(const StackValue& stackvalue);
 
     /// @brief Returns the name of the type of the value.
@@ -188,7 +188,7 @@ class EXPORT UpValue : public StackValue
 {
 public:
     UpValue(RawInterface raw, int upValueIndex);
-    explicit UpValue(const Stack& stack, int upValueIndex);
+    explicit UpValue(const StackInterface& stack, int upValueIndex);
 
     template<typename _Value> void reset(_Value value)
     {
@@ -210,7 +210,7 @@ class EXPORT Value : public StackValue, private IValueDataSources
     friend class Script;
 public:
     Value(RawInterface raw);
-    explicit Value(const Stack& stack);
+    explicit Value(const StackInterface& stack);
     Value(const StackValue& value);
     Value(const Value& copy);
     virtual ~Value();
@@ -230,7 +230,7 @@ public:
     /// @brief Set new value from given stack top, and then pops the top element.
     /// If stack is empty, Will to push a nil then to reset
     /// You can change current value's stack
-    void reset(Stack& stack);
+    void reset(StackInterface& stack);
 
     void reset(const StackValue& stack);
 

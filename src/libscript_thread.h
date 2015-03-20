@@ -50,7 +50,7 @@ class EXPORT Thread FINAL : public Value
 public:
     typedef StackValue Result;
 
-    explicit Thread(const Stack& stack);
+    explicit Thread(const StackInterface& stack);
     Thread(const Value& value);
 
     void load(const char* filename);
@@ -92,7 +92,7 @@ private:
 private:
     int _beform_stack_size;
     int _resultNum;
-    Stack _thread;
+    StackInterface _thread;
     MultiPusher _pusher;
 };
 

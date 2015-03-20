@@ -49,7 +49,7 @@
 
 _NAME_BEGIN
 
-class EXPORT Script FINAL : public Stack
+class EXPORT Script FINAL : public StackInterface
 {
 public:
     Script(bool openlibs = true, MemAllocFunc alloc = NULL, void* ud = NULL);
@@ -105,7 +105,7 @@ public:
         return (Value)*this;
     }
     
-    template <typename ... _Value> Value newTable(_Value ... value)
+	template <typename ... _Value> Value newTable(_Value ... value)
     {
         newtable();
 
@@ -134,7 +134,7 @@ public:
     
     /// @brief index value with given the key
     /// If given index is a nonexistent key, will be return a nil
-    Table operator[](long long key);
+	Table operator[](int key);
     Table operator[](Value& value);
     Table operator[](const char* key);
 

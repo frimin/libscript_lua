@@ -46,7 +46,7 @@ _NAME_BEGIN
 class EXPORT TableStringDumper FINAL : public Value
 {
 public:
-    TableStringDumper(const Stack& stack);
+    TableStringDumper(const StackInterface& stack);
     TableStringDumper(const Value& value);
     TableStringDumper(const Table& table);
 

@@ -56,7 +56,7 @@ enum class ARGS_EVALUATE
     RIGHT_TO_LEFT,
 };
 
-class EXPORT ArgsIterator : public Stack
+class EXPORT ArgsIterator : public StackInterface
 {
 public:
     ArgsIterator(Args args, bool reverse = false, int ignoreBottom = 0);
@@ -78,7 +78,7 @@ public:
     typedef int(*Forward)(Args& args, Pusher& returns);
     
     template <typename _Func>
-    static void push(Stack& stack, _Func func)
+    static void push(StackInterface& stack, _Func func)
     {
         auto *w = (Wrapper<_Func> *)stack.newuserdata(sizeof(Wrapper<_Func>));
         w->value = func;
@@ -86,7 +86,7 @@ public:
     }
 
     template <typename ... _UpValue>
-    static void pushForward(Stack& stack, Function::Forward func, _UpValue ... upValue)
+    static void pushForward(StackInterface& stack, Function::Forward func, _UpValue ... upValue)
     {
         auto w = (Wrapper<Function::Forward>*)stack.newuserdata(sizeof(Wrapper<Function::Forward>));
         w->value = func;
@@ -101,9 +101,9 @@ private:
     template <typename _Func>
     static int dispatcher(RawInterface raw)
     {
-        Stack stack(raw);
+        StackInterface stack(raw);
 
-        auto w = (Wrapper<_Func>*)stack.touserdata(Stack::upvalueindex(1));
+        auto w = (Wrapper<_Func>*)stack.touserdata(StackInterface::upvalueindex(1));
 
         return Function::caller(stack, w->value);
     }
@@ -112,7 +112,7 @@ private:
     {
         Args args(raw, 1);
 
-        auto w = (Wrapper<Function::Forward>*)args.touserdata(Stack::upvalueindex(1));
+        auto w = (Wrapper<Function::Forward>*)args.touserdata(StackInterface::upvalueindex(1));
 
         Pusher pusher(raw);
 
@@ -120,7 +120,7 @@ private:
     }
     
     template <typename ... _Args>
-    static int caller(Stack& stack, void(*func)(_Args ...))
+    static int caller(StackInterface& stack, void(*func)(_Args ...))
     {
         Args args(stack.getInterface());
         ArgsIterator argIter(args,
@@ -132,7 +132,7 @@ private:
     }
     
     template <typename _Rt, typename ... _Args>
-    static int caller(Stack& stack,  _Rt(*func)(_Args ...))
+    static int caller(StackInterface& stack,  _Rt(*func)(_Args ...))
     {
         Args args(stack.getInterface());
         ArgsIterator argIter(args,
@@ -155,12 +155,12 @@ public:
     typedef _Class*(*Forward)(Args& args);
 
     template <typename ... _Args>
-    static void push(Stack& stack)
+    static void push(StackInterface& stack)
     {
         stack.pushcclosure(Constructor<_Class>::dispatcher<_Args ...>, 0);
     }
 
-    static void pushForward(Stack& stack, typename Constructor<_Class>::Forward method)
+    static void pushForward(StackInterface& stack, typename Constructor<_Class>::Forward method)
     {
         auto w =
             (Wrapper<Constructor<_Class>::Forward>*)stack.newuserdata(sizeof(Wrapper<Constructor<_Class>::Forward>));
@@ -183,7 +183,7 @@ private:
     {
         Args args(raw);
 
-        auto w = (Wrapper<Constructor<_Class>::Forward>*)args.touserdata(Stack::upvalueindex(1));
+        auto w = (Wrapper<Constructor<_Class>::Forward>*)args.touserdata(StackInterface::upvalueindex(1));
 
         return setupMetaTable(args, w->value(args));
     }
@@ -194,7 +194,7 @@ private:
         return creator(static_cast<_Args>(argIter.GetAndToNext())...);
     }
 
-    static int setupMetaTable(Stack& stack, _Class* obj)
+    static int setupMetaTable(StackInterface& stack, _Class* obj)
     {
         if (obj == NULL)
            return stack.error_L("Bad initialization");;
@@ -207,7 +207,7 @@ private:
         info->ref = false;
         info->readonly = false;
 
-        stack.getfield(Stack::REGISTRYINDEX(), metaname.c_str());
+        stack.getfield(StackInterface::REGISTRYINDEX(), metaname.c_str());
         stack.setmetatable(-2);
 
         return 1;
@@ -222,14 +222,14 @@ public:
     typedef int(*ReadOnlyForward)(const _Class* _this, Args& args, Pusher& returns);
 
     template<typename _Method>
-    static void push(Stack& stack, _Method method)
+    static void push(StackInterface& stack, _Method method)
     {
         Wrapper<_Method>* w = (Wrapper<_Method>*)stack.newuserdata(sizeof(Wrapper<_Method>));
         w->value = method;
         stack.pushcclosure(Method<_Class>::dispatcher<_Method>, 1);
     }
 
-    static void pushForward(Stack& stack, typename Method<_Class>::Forward method)
+    static void pushForward(StackInterface& stack, typename Method<_Class>::Forward method)
     {
         Wrapper<Method<_Class>::Forward>* w =
             (Wrapper<Method<_Class>::Forward>*)stack.newuserdata(sizeof(Wrapper<Method<_Class>::Forward>));
@@ -237,7 +237,7 @@ public:
         stack.pushcclosure(Method<_Class>::forwardDispatcher, 1);
     }
 
-    static void pushForward(Stack& stack, typename Method<_Class>::ReadOnlyForward method)
+    static void pushForward(StackInterface& stack, typename Method<_Class>::ReadOnlyForward method)
     {
         Wrapper<Method<_Class>::ReadOnlyForward>* w =
             (Wrapper<Method<_Class>::ReadOnlyForward>*)stack.newuserdata(sizeof(Wrapper<Method<_Class>::ReadOnlyForward>));
@@ -250,11 +250,11 @@ private:
     template<typename _Method>
     static int dispatcher(RawInterface raw)
     {
-        Stack stack(raw);
+        StackInterface stack(raw);
 
         auto info = (ClassInfo<_Class>*)stack.touserdata(1);
 
-        auto w = (Wrapper<_Method>*)stack.touserdata(Stack::upvalueindex(1));
+        auto w = (Wrapper<_Method>*)stack.touserdata(StackInterface::upvalueindex(1));
 
         return Method<_Class>::caller(stack, info, w->value);
     }
@@ -270,7 +270,7 @@ private:
 
         auto info = (ClassInfo<_Class>*)args.touserdata(1);
 
-        auto w = (Wrapper<Method<_Class>::Forward>*)args.touserdata(Stack::upvalueindex(1));
+        auto w = (Wrapper<Method<_Class>::Forward>*)args.touserdata(StackInterface::upvalueindex(1));
 
         if (info->readonly)
         {
@@ -295,7 +295,7 @@ private:
 
         auto info = (ClassInfo<_Class>*)args.touserdata(1);
 
-        auto w = (Wrapper<Method<_Class>::ReadOnlyForward>*)args.touserdata(Stack::upvalueindex(1));
+        auto w = (Wrapper<Method<_Class>::ReadOnlyForward>*)args.touserdata(StackInterface::upvalueindex(1));
 
         Pusher pusher(raw);
 
@@ -305,7 +305,7 @@ private:
     }
 
     template <typename ... _Args>
-    static int caller(Stack& stack, ClassInfo<_Class>* info, void (_Class::*method)(_Args ...))
+    static int caller(StackInterface& stack, ClassInfo<_Class>* info, void (_Class::*method)(_Args ...))
     {
         if (info->readonly)
         {
@@ -322,7 +322,7 @@ private:
     }
 
     template <typename _Rt, typename ... _Args>
-    static int caller(Stack& stack, ClassInfo<_Class>* info, _Rt(_Class::*method)(_Args ...))
+    static int caller(StackInterface& stack, ClassInfo<_Class>* info, _Rt(_Class::*method)(_Args ...))
     {
         if (info->readonly)
         {
@@ -343,7 +343,7 @@ private:
     }
 
     template <typename ... _Args>
-    static int caller(Stack& stack, ClassInfo<_Class>* info, void (_Class::*method)(_Args ...) const)
+    static int caller(StackInterface& stack, ClassInfo<_Class>* info, void (_Class::*method)(_Args ...) const)
     {
         Args args(stack.getInterface());
         ArgsIterator argIter(args,
@@ -355,7 +355,7 @@ private:
     }
 
     template <typename _Rt, typename ... _Args>
-    static int caller(Stack& stack, ClassInfo<_Class>* info, _Rt(_Class::*method)(_Args ...) const)
+    static int caller(StackInterface& stack, ClassInfo<_Class>* info, _Rt(_Class::*method)(_Args ...) const)
     {
         Args args(stack.getInterface());
         ArgsIterator argIter(args,
@@ -376,12 +376,12 @@ template<typename _Class>
 class Destructor
 {
 public:
-    static void push(Stack& stack)
+    static void push(StackInterface& stack)
     {
         stack.pushcclosure(Destructor<_Class>::dispatcher, 0);
     }
 
-    static void push(Stack& stack, void (userDispatcher)(_Class*))
+    static void push(StackInterface& stack, void (userDispatcher)(_Class*))
     {
         auto w =
             (Wrapper<void(*)(_Class*)>*)stack.newuserdata(sizeof(Wrapper<void(*)(_Class*)>));
@@ -397,7 +397,7 @@ private:
         ArgsIterator argIter(args,
             ArgsIterator::getConstructorSequence() != ARGS_EVALUATE::RIGHT_TO_LEFT, 0);
 
-        Stack stack(raw);
+        StackInterface stack(raw);
 
         ClassInfo<_Class>* info = (ClassInfo<_Class>*)stack.touserdata(1);
 
@@ -417,11 +417,11 @@ private:
 
     static int userDispatcher(RawInterface raw)
     {
-        Stack stack(raw);
+        StackInterface stack(raw);
 
         assert(stack.gettop() == 1);
 
-        auto w = (Wrapper<Destroyer>*)stack.touserdata(Stack::upvalueindex(1));
+        auto w = (Wrapper<Destroyer>*)stack.touserdata(StackInterface::upvalueindex(1));
 
         ClassInfo<_Class>* info = (ClassInfo<_Class>*)stack.touserdata(1);
 

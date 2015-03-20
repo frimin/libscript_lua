@@ -82,7 +82,7 @@ int _doTest()
 
 const int i = _doTest();
 
-ArgsIterator::ArgsIterator(Args args, bool reverse, int ignoreBottom) : Stack(args), _args(args)
+ArgsIterator::ArgsIterator(Args args, bool reverse, int ignoreBottom) : StackInterface(args), _args(args)
 {
     if (!reverse)
     {

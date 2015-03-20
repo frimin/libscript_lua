@@ -36,7 +36,7 @@
 
 _NAME_BEGIN
 
-Table::Table(const Stack& stack) : Value(stack), _pusher(NULL)
+Table::Table(const StackInterface& stack) : Value(stack), _pusher(NULL)
 {
     _pusher.reset(getInterface());
 }
@@ -80,6 +80,31 @@ Value Table::at(const std::string& key)
     return this->_c_state;
 }
 
+Table Table::getMetaTable()
+{
+	pushRef(T_Table);
+	if (getmetatable(-1) == 0)
+		pushnil();
+	remove(-2);
+	return this->_c_state;
+}
+
+void Table::setMetaTable(Table& t)
+{
+	pushRef(T_Table);
+	t.pushRefSafe(T_Table);
+	setmetatable(-2);
+	pop(1);
+}
+
+void Table::setMetaTable(Value& t)
+{
+	pushRef(T_Table);
+	t.pushRefSafe(T_Table);
+	setmetatable(-2);
+	pop(1);
+}
+
 size_t Table::len()
 {
     this->pushRef(T_Table);
@@ -88,7 +113,7 @@ size_t Table::len()
     return s;
 }
 
-Table Table::operator[](long long key)
+Table Table::operator[](int key)
 {
     if (pushRefSafe(T_Table))
     {
@@ -151,7 +176,7 @@ Table::Accessor::Accessor(Table table)
     _key(table.getInterface(), 0),
     _value(table.getInterface(), 0)
 {
-    _table.pushRef(Stack::T_Table);
+    _table.pushRef(StackInterface::T_Table);
     _table.pushnil();
     _table.pushnil();
 

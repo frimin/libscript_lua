@@ -39,10 +39,10 @@
 
 _NAME_BEGIN
 
-Thread::Thread(const Stack& stack) : Value(stack), _thread(NULL), _pusher(NULL)
+Thread::Thread(const StackInterface& stack) : Value(stack), _thread(NULL), _pusher(NULL)
 {
     pushRef(T_Thread);
-    _thread = Stack(tothread(-1));
+    _thread = StackInterface(tothread(-1));
     pop(1);
 
     _pusher.reset(_thread.getInterface());
@@ -51,7 +51,7 @@ Thread::Thread(const Stack& stack) : Value(stack), _thread(NULL), _pusher(NULL)
 Thread::Thread(const Value& value) : Value(value), _thread(NULL), _pusher(NULL)
 {
     pushRef(T_Thread);
-    _thread = Stack(tothread(-1));
+    _thread = StackInterface(tothread(-1));
     pop(1);
 
     _pusher.reset(_thread.getInterface());
@@ -144,7 +144,7 @@ void Thread::resultReset()
     _beform_stack_size = gettop(); 
 }
 
-Stack::THREADSTATUS Thread::_resume()
+StackInterface::THREADSTATUS Thread::_resume()
 {
     THREADSTATUS result = (THREADSTATUS)_thread.resume(_c_state, _pusher.count());
 
@@ -156,7 +156,7 @@ int Thread::resultCount()
     return gettop() - _beform_stack_size;
 }
 
-Stack::THREADSTATUS Thread::status()
+StackInterface::THREADSTATUS Thread::status()
 {
     return _thread.status();
 }

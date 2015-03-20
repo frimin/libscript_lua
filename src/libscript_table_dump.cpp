@@ -44,7 +44,7 @@ _NAME_BEGIN
 class Path
 {
 public:
-    Path(Stack stack, const std::string& mainTable)
+    Path(StackInterface stack, const std::string& mainTable)
         : _thread_stack(stack.newthread())
     {
         stack.pop(1);
@@ -97,10 +97,10 @@ public:
 
             switch (_thread_stack.type(i))
             {
-            case Stack::T_String:
+            case StackInterface::T_String:
                 _temp_pathStr.append("[\"" + std::string(_thread_stack.tostring(i)) + "\"]");
                 break;
-            case Stack::T_Number:
+            case StackInterface::T_Number:
                 _temp_pathStr.append("[" + std::string(_thread_stack.tostring(i)) + "]");
                 break;
             default:
@@ -117,11 +117,11 @@ public:
     }
 
 private:
-    Stack _thread_stack;
+    StackInterface _thread_stack;
     std::string _temp_pathStr;
 };
 
-TableStringDumper::TableStringDumper(const Stack& stack) : Value(stack)
+TableStringDumper::TableStringDumper(const StackInterface& stack) : Value(stack)
 {
 }
 
@@ -169,7 +169,7 @@ bool TableStringDumper::dump(const std::string& tableName, std::ostream& o)
     /// Remember current traverse table
     std::vector<int> curTable;
 
-    if (!pushRefSafe(Stack::T_Table))
+    if (!pushRefSafe(StackInterface::T_Table))
         return false;
 
     curTable.push_back(gettop());
@@ -190,7 +190,7 @@ bool TableStringDumper::dump(const std::string& tableName, std::ostream& o)
             tabs(o, curTable.size());
 
             /// key
-            switch (Stack::type(-2))
+            switch (StackInterface::type(-2))
             {
             case T_String:
                 if (legalStringKey(tostring(-2), rawlen(-2)))
@@ -212,7 +212,7 @@ bool TableStringDumper::dump(const std::string& tableName, std::ostream& o)
             paths.push_back(path.pathStr());
 
             /// value
-            switch (Stack::type(-1))
+            switch (StackInterface::type(-1))
             {
             case T_String:
                 o << "\"" << tostring(-1) << "\"";

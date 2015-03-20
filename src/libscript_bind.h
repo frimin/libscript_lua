@@ -64,8 +64,8 @@ public:
         std::string metaname(typeid(_Class).name());
 
         _metaTable.set("__index", _metaTable);
-        _metaTable.pushRefSafe(Stack::NoneMask);
-        _metaTable.setfield(Stack::REGISTRYINDEX(), metaname.c_str());
+        _metaTable.pushRefSafe(StackInterface::NoneMask);
+        _metaTable.setfield(StackInterface::REGISTRYINDEX(), metaname.c_str());
     }
     template <typename ... _Args>
     BindClass& create(const char* name)
@@ -85,7 +85,7 @@ public:
     template<typename _Method>
     BindClass& method(const char* name, _Method method)
     {
-        _metaTable.pushRef(Stack::T_Table);
+        _metaTable.pushRef(StackInterface::T_Table);
         _script.pushstring(name);
         CD::Method<_Class>::template push<_Method>(_script, method);
         _script.rawset(-3);
@@ -95,7 +95,7 @@ public:
 
     BindClass& methodForward(const char* name, Method method)
     {
-        _metaTable.pushRef(Stack::T_Table);
+        _metaTable.pushRef(StackInterface::T_Table);
         _script.pushstring(name);
         CD::Method<_Class>::pushForward(_script, method);
         _script.rawset(-3);
@@ -105,7 +105,7 @@ public:
 
     BindClass& methodReadOnlyForward(const char* name, ReadOnlyMethod method)
     {
-        _metaTable.pushRef(Stack::T_Table);
+        _metaTable.pushRef(StackInterface::T_Table);
         _script.pushstring(name);
         CD::Method<_Class>::pushForward(_script, method);
         _script.rawset(-3);
@@ -115,7 +115,7 @@ public:
 
     BindClass& destroy(const char* name)
     {
-        _metaTable.pushRef(Stack::T_Table);
+        _metaTable.pushRef(StackInterface::T_Table);
         _script.pushstring(name);
         CD::Destructor<_Class>::push(_script);
         _script.rawset(-3);
@@ -125,7 +125,7 @@ public:
 
     BindClass& destroy(const char* name, void (destroyer)(_Class*))
     {
-        _metaTable.pushRef(Stack::T_Table);
+        _metaTable.pushRef(StackInterface::T_Table);
         _script.pushstring(name);
         CD::Destructor<_Class>::push(_script, destroyer);
         _script.rawset(-3);
@@ -136,7 +136,7 @@ public:
     template<typename _Key, typename _Value>
     BindClass& set(_Key key, _Value value)
     {
-        _metaTable.pushRef(Stack::T_Table);
+        _metaTable.pushRef(StackInterface::T_Table);
         _pusher.push(key);
         _pusher.push(value);
         _pusher.rawset(-3);

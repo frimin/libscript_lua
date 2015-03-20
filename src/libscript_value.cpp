@@ -59,17 +59,17 @@ struct DataSourcesDispatcher
     IValueDataSources* _dataSources;
 };
 
-StackValue::StackValue(RawInterface raw, int index, IValueDataSources* dataSources) : Stack(raw), _index(index), _dataSources(dataSources)
+StackValue::StackValue(RawInterface raw, int index, IValueDataSources* dataSources) : StackInterface(raw), _index(index), _dataSources(dataSources)
 {
 
 }
 
-StackValue::StackValue(const Stack& stack, int index, IValueDataSources* dataSources) : Stack(stack), _index(index), _dataSources(dataSources)
+StackValue::StackValue(const StackInterface& stack, int index, IValueDataSources* dataSources) : StackInterface(stack), _index(index), _dataSources(dataSources)
 {
 
 }
 
-StackValue::StackValue(const StackValue& stackvalue) : Stack(stackvalue), _index(stackvalue._index), _dataSources(NULL)
+StackValue::StackValue(const StackValue& stackvalue) : StackInterface(stackvalue), _index(stackvalue._index), _dataSources(NULL)
 {
 
 }
@@ -79,10 +79,10 @@ const char* StackValue::typeName()  {
     return typename_L(_index);
 }
 
-Stack::TYPE StackValue::type()
+StackInterface::TYPE StackValue::type()
 {
     DataSourcesDispatcher dispatcher(_dataSources);
-    return Stack::type(_index);
+    return StackInterface::type(_index);
 }
 
 bool StackValue::toBoolean()
@@ -228,11 +228,11 @@ StackValue& StackValue::operator = (const StackValue& copy)
     return *this;
 }
 
-UpValue::UpValue(RawInterface raw, int upValueIndex) : StackValue(raw, Stack::upvalueindex(upValueIndex)), _pusher(raw)
+UpValue::UpValue(RawInterface raw, int upValueIndex) : StackValue(raw, StackInterface::upvalueindex(upValueIndex)), _pusher(raw)
 {
 }
 
-UpValue::UpValue(const Stack& stack, int upValueIndex) : StackValue(stack, Stack::upvalueindex(upValueIndex)), _pusher(stack)
+UpValue::UpValue(const StackInterface& stack, int upValueIndex) : StackValue(stack, StackInterface::upvalueindex(upValueIndex)), _pusher(stack)
 {
 }
 
@@ -314,22 +314,22 @@ Value::Value(RawInterface raw) : StackValue(raw, -1, this)
     if (gettop() == 0)
         SCRIPT_EXCEPTION("No element in the stack");
 
-    _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
+    _handler = ValueHandler::create(ref_L(StackInterface::REGISTRYINDEX()));
 }
 
-Value::Value(const Stack& stack) : StackValue(stack, -1, this)
+Value::Value(const StackInterface& stack) : StackValue(stack, -1, this)
 {
     if (gettop() == 0)
         SCRIPT_EXCEPTION("No element in the stack");
 
-    _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
+    _handler = ValueHandler::create(ref_L(StackInterface::REGISTRYINDEX()));
 }
 
 Value::Value(const StackValue& value) : StackValue(value, -1, this)
 {
     pushvalue(getIndex());
 
-    _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
+    _handler = ValueHandler::create(ref_L(StackInterface::REGISTRYINDEX()));
 }
 
 Value::Value(const Value& copy) : StackValue(copy, -1, this)
@@ -346,22 +346,22 @@ Value::~Value()
 
 void Value::pushRef(TYPE check)
 {
-    rawgeti(Stack::REGISTRYINDEX(), _handler->value);
+    rawgeti(StackInterface::REGISTRYINDEX(), _handler->value);
 
     if (check != NoneMask)
     {
-        if (Stack::type(-1) != check)
+        if (StackInterface::type(-1) != check)
             SCRIPT_EXCEPTION("Bad stackobj type.");
     }
 }
 
 bool Value::pushRefSafe(TYPE check)
 {
-    rawgeti(Stack::REGISTRYINDEX(), _handler->value);
+    rawgeti(StackInterface::REGISTRYINDEX(), _handler->value);
 
     if (check != NoneMask)
     {
-        if (Stack::type(-1) != check)
+        if (StackInterface::type(-1) != check)
         {
             this->pop(1);
             return false;
@@ -378,10 +378,10 @@ void Value::reset()
 
     releaseHandler();
 
-    _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
+    _handler = ValueHandler::create(ref_L(StackInterface::REGISTRYINDEX()));
 }
 
-void Value::reset(Stack& stack)
+void Value::reset(StackInterface& stack)
 {
     if (stack.gettop() == 0)
         stack.pushnil();
@@ -390,7 +390,7 @@ void Value::reset(Stack& stack)
 
     _c_state = stack.getInterface();
 
-    _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
+    _handler = ValueHandler::create(ref_L(StackInterface::REGISTRYINDEX()));
 }
 
 void Value::reset(const StackValue& stack)
@@ -404,7 +404,7 @@ void Value::reset(const StackValue& stack)
 
     pushvalue(getIndex());
 
-    _handler = ValueHandler::create(ref_L(Stack::REGISTRYINDEX()));
+    _handler = ValueHandler::create(ref_L(StackInterface::REGISTRYINDEX()));
 }
 
 void Value::pushData()
@@ -461,7 +461,7 @@ void Value::releaseHandler()
 {
     if (_handler->refCount == 1)
     {
-        unref_L(Stack::REGISTRYINDEX(), _handler->value);
+        unref_L(StackInterface::REGISTRYINDEX(), _handler->value);
     }
 
     ValueHandler::release(_handler);

@@ -3,5 +3,5 @@
 int main()
 {
     Script script;
-    script.execString("print(\"hello world\")");
+	script.execString("print(\"hello world\")");
 }

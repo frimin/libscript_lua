@@ -20,19 +20,19 @@ int main()
 
     int n = 0;
 
-	Stack::THREADSTATUS state = Stack::STATUS_YIELD;
+	StackInterface::THREADSTATUS state = StackInterface::STATUS_YIELD;
 
-    while (state == Stack::STATUS_YIELD)
+    while (state == StackInterface::STATUS_YIELD)
     {
         state = thread.resume(++n);
         
         switch (state)
         {
         
-        case Stack::STATUS_YIELD:
+        case StackInterface::STATUS_YIELD:
             std::cout << thread[1].toInteger() << std::endl;
             break;
-        case Stack::STATUS_OK:
+        case StackInterface::STATUS_OK:
             std::cout << "done" << std::endl;
             break;
         default:

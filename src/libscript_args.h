@@ -47,14 +47,14 @@ class EXPORT Arg FINAL : public StackValue
 {
 public:
     Arg(RawInterface raw, int index);
-    Arg(Stack stack, int index);
+    Arg(StackInterface stack, int index);
 
     /// @brief Returns value of copy to registry
     Value toValue();
 };
 
 /// @brief Represent function stack.
-class EXPORT Args FINAL : public Stack
+class EXPORT Args FINAL : public StackInterface
 {
 public:
     Args(RawInterface raw, int upValueBegin = 0);

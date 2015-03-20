@@ -11,17 +11,17 @@ int foo2(Args& args, Pusher& returns)
 
         for (Table::Accessor acc(t); !acc.end(); acc.next())
         {
-			Stack::TYPE type = acc.value().type();
+			StackInterface::TYPE type = acc.value().type();
 
             switch (type)
             {
-            case Stack::T_Number:
+			case StackInterface::T_Number:
                 std::cout << acc.value().toInteger() << std::endl;
                 break;
-            case Stack::T_String:
+			case StackInterface::T_String:
                 std::cout << acc.value().toString() << std::endl;
                 break;
-            case Stack::T_Function:
+			case StackInterface::T_Function:
             {
                 Function f = acc.value();
                 f();

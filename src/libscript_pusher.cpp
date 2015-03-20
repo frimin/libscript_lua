@@ -40,8 +40,8 @@
 
 _NAME_BEGIN
 
-Pusher::Pusher(RawInterface raw) : Stack(raw), _push_count(0) { }
-Pusher::Pusher(const Stack& stack) : Stack(stack), _push_count(0) { }
+Pusher::Pusher(RawInterface raw) : StackInterface(raw), _push_count(0) { }
+Pusher::Pusher(const StackInterface& stack) : StackInterface(stack), _push_count(0) { }
 Pusher& Pusher::push(bool b)         { pushboolean(b); ++_push_count; return *this; }
 Pusher& Pusher::push(long long n)    { pushinteger(n); ++_push_count; return *this; }
 Pusher& Pusher::push(int n)          { pushinteger(n); ++_push_count; return *this; }
@@ -50,7 +50,7 @@ Pusher& Pusher::push(long n)         { pushinteger(n); ++_push_count; return *th
 Pusher& Pusher::push(const char* cstr) { pushstring(cstr); ++_push_count; return *this; }
 Pusher& Pusher::push(double f)       { pushnumber(f); ++_push_count; return *this; }
 Pusher& Pusher::push(CFunction func) { pushcfunction(func); ++_push_count; return *this; }
-Pusher& Pusher::push(Stack::P_Nil)   { pushnil(); ++_push_count; return *this; }
+Pusher& Pusher::push(StackInterface::P_Nil)   { pushnil(); ++_push_count; return *this; }
 Pusher& Pusher::push(Value& value)    { sameThread(value); value.pushRefSafe(NoneMask); ++_push_count; return *this; }
 Pusher& Pusher::push(Class c)     
 {
@@ -60,7 +60,7 @@ Pusher& Pusher::push(Class c)
     info->ref = c.ref;
     info->readonly = c.readonly;
 
-    getfield(Stack::REGISTRYINDEX(), c.metaname.c_str());
+    getfield(StackInterface::REGISTRYINDEX(), c.metaname.c_str());
 
     if (!istable(-1))
     {
@@ -79,7 +79,7 @@ void Pusher::reset()                { _push_count = 0; }
 int Pusher::count() const           { return _push_count; }
 
 MultiPusher::MultiPusher(RawInterface raw) : Pusher(raw) { }
-MultiPusher::MultiPusher(const Stack& stack) : Pusher(stack) { }
+MultiPusher::MultiPusher(const StackInterface& stack) : Pusher(stack) { }
 
 /// @}
 
